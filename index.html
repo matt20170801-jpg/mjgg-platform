@@ -1,0 +1,2554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MJ GreenGuard — Jobs</title>
+<style>
+:root{--ink:#16241D;--ink2:#3A4A41;--mute:#7B887F;--line:#DDE1D9;--paper:#F6F7F2;
+--panel:#fff;--hi:#C8E019;--pos:#2E6F4E;--neg:#A83A25;}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:"Segoe UI",Roboto,-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;
+background:var(--paper);color:var(--ink);font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;cursor:pointer}input,select,textarea{font:inherit;color:inherit}
+.shell{max-width:1160px;margin:0 auto;padding:0 13px 90px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;padding:18px 0 13px;border-bottom:2px solid var(--ink)}
+.job{font-size:19px;font-weight:700;line-height:1.15}
+.sub{font-size:12px;color:var(--mute);margin-top:3px}
+.me{margin-left:auto;text-align:right;font-size:12px;color:var(--mute)}
+nav{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);margin:14px 0 16px}
+.tab{padding:11px 13px;white-space:nowrap;background:none;border:0;border-bottom:3px solid transparent;
+font-size:14px;font-weight:500;color:var(--mute)}
+.tab.on{color:var(--ink);font-weight:600;border-bottom-color:var(--hi)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:3px;margin-bottom:12px}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;
+border-bottom:1px solid var(--line);flex-wrap:wrap}
+.pt{font-size:14px;font-weight:600}.ps{font-size:12px;color:var(--mute)}
+.band{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));background:#fff;
+border:1px solid var(--line);border-radius:3px;margin-bottom:12px}
+.cell{padding:14px 15px;border-right:1px solid var(--line)}.cell:last-child{border-right:0}
+.cl{font-size:11px;color:var(--mute)}.cn{font-size:20px;font-weight:600;margin-top:4px}
+.cx{font-size:11px;color:var(--mute);margin-top:3px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:600;font-size:11px;color:var(--mute);padding:9px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 9px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}.r{text-align:right}
+.tot td{font-weight:700;background:var(--paper);border-top:2px solid var(--ink)}
+.clamp{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.in{width:100%;padding:8px;border:1px solid var(--line);border-radius:3px;background:#fff;font-size:14px}
+.in:focus{border-color:var(--ink);outline:none}
+.qty{width:88px;text-align:right;padding:6px 8px}
+.day{width:46px;padding:9px 2px;text-align:center;border:1px solid var(--line);border-radius:3px;font-size:15px;font-weight:500}
+.day:focus{border-color:var(--ink);outline:none;background:#FCFEEF}
+.lab{display:block;font-size:11.5px;color:var(--mute);margin:9px 0 4px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border:1px solid var(--ink);
+border-radius:3px;background:var(--ink);color:#fff;font-size:13.5px;font-weight:600}
+.btn.hi{background:var(--hi);border-color:var(--hi);color:var(--ink)}
+.btn.q{background:none;color:var(--ink2);border-color:var(--line);font-weight:500}
+.btn.sm{padding:6px 10px;font-size:12.5px}
+.btn[disabled]{opacity:.45;cursor:default}
+.x{border:0;background:none;color:var(--mute);padding:5px 7px;font-size:15px}
+.x:hover{color:var(--neg)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.chip{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:10px;font-size:11px;background:var(--paper)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;min-width:60px}
+.bar>i{display:block;height:100%;background:var(--ink2)}
+.empty{padding:30px;text-align:center;color:var(--mute);font-size:13.5px}
+.task{padding:13px 14px;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;margin-top:5px}
+.tname{font-size:14.5px;font-weight:600}.tmeta{font-size:11.5px;color:var(--mute);margin-top:2px}
+.pbar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:9px}
+.pbar>i{display:block;height:100%;background:var(--pos)}
+.pctrow{display:flex;gap:8px;align-items:center;margin-top:9px;flex-wrap:wrap}
+.pctbtn{padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:#fff;font-size:12.5px}
+.pctbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.cmt{padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
+.photos{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.photos img{width:76px;height:76px;object-fit:cover;border-radius:3px;border:1px solid var(--line)}
+.modal{position:fixed;inset:0;background:rgba(18,28,22,.45);display:flex;align-items:flex-end;
+justify-content:center;z-index:50}
+.sheet{background:#fff;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;border-radius:6px 6px 0 0}
+@media(min-width:640px){.modal{align-items:center;padding:20px}.sheet{border-radius:4px}}
+.pick{display:flex;width:100%;text-align:left;gap:10px;padding:10px 12px;border:0;
+border-bottom:1px solid var(--line);background:none}
+.pick[disabled]{opacity:.4}
+.grid2{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.mid{max-width:420px;margin:8vh auto;padding:0 16px}
+.err{background:#FDF1EE;border:1px solid #F0C4B8;border-radius:3px;padding:10px 12px;font-size:13px;margin-top:12px}
+.foot{font-size:11px;color:var(--mute);text-align:right;padding-top:8px}
+.live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--pos);margin-right:5px}
+.gwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+.grow{display:flex;align-items:stretch;border-bottom:1px solid var(--line);min-height:40px}
+.grow:last-child{border-bottom:0}
+.gleft{position:sticky;left:0;z-index:2;background:#fff;min-width:250px;max-width:250px;
+padding:6px 10px;border-right:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.ghead{background:var(--paper)}.ghead .gleft{background:var(--paper);font-size:11px;color:var(--mute);font-weight:600}
+.gtrack{position:relative;flex:1}
+.gday{position:absolute;top:0;bottom:0;border-right:1px solid #EFF1EC}
+.gday.we{background:#F2F3EE}
+.gdlab{font-size:9.5px;color:var(--mute);text-align:center;padding-top:3px}
+.gmon{font-size:11px;font-weight:600;padding:3px 6px;position:absolute;white-space:nowrap}
+.gbar{position:absolute;top:8px;height:23px;border-radius:3px;display:flex;align-items:center;
+padding:0 7px;font-size:11.5px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden}
+.gtoday{position:absolute;top:0;bottom:0;width:2px;background:var(--neg);z-index:1}
+.gname{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gmeta{font-size:10.5px;color:var(--mute)}
+.doc{background:#fff;max-width:840px;margin:0 auto;padding:44px 52px;border:1px solid var(--line);
+color:#1A1A1A;font-size:11.2pt;line-height:1.55}
+.doc h1{font-size:32px;margin:0;letter-spacing:-.02em;font-weight:700}
+.doc h2{font-size:12px;margin:26px 0 12px;padding-bottom:6px;border-bottom:1.5px solid var(--ink);
+text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+.doc p{line-height:1.6;white-space:pre-wrap;margin:0 0 12px}
+.doc table{font-size:10.5pt;width:100%}
+.doc th{font-size:9pt;letter-spacing:.06em;text-transform:uppercase;color:#555;
+border-bottom:1.5px solid var(--ink);padding:7px 8px}
+.doc td{padding:8px;border-bottom:1px solid #E6E6E6;vertical-align:top}
+.doc tr{page-break-inside:avoid}
+.doc .tot td{border-top:1.5px solid var(--ink);border-bottom:0;font-weight:700}
+.cover{min-height:300px}
+.rule{height:3px;background:var(--ink);margin:26px 0 20px}
+.qtitle{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.qmeta{text-align:right;font-size:10.5pt;line-height:1.7;color:#444}
+.qmeta b{color:#1A1A1A}
+.headline{border:1px solid var(--line);border-left:5px solid var(--brand);padding:20px 24px;margin:30px 0 0}
+.headline .n{font-size:34px;font-weight:700;letter-spacing:-.025em;line-height:1.05}
+.headline .l{font-size:10pt;text-transform:uppercase;letter-spacing:.1em;color:#555}
+.terms{font-size:10pt;line-height:1.58;max-width:none}
+.terms.two{column-count:2;column-gap:26px;font-size:9pt;line-height:1.5;text-align:justify}
+.terms .th{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:9.4pt;
+margin:16px 0 6px;break-after:avoid;page-break-after:avoid}
+.terms.two .th{font-size:8.6pt;margin:11px 0 4px}
+.terms p{margin:0 0 9px}
+.terms.two p{margin:0 0 7px}
+@media(max-width:700px){.terms{column-count:1}}
+.meta{font-size:12.5px;color:var(--ink2);line-height:1.65}
+.brk{page-break-before:always}
+.specban{border-top:3px solid var(--brand);border-bottom:1px solid #C9CEC5;
+padding:14px 0 12px;margin:0 0 20px}
+.specban h2{border:0;margin:0;padding:0;font-size:23px;text-transform:none;letter-spacing:-.01em;font-weight:400}
+.specbody{font-size:13px;line-height:1.62;white-space:pre-wrap}
+.logo{max-width:280px;height:auto;display:block;margin-bottom:10px}
+.pg2{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:24px}
+.sum{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.sum.big{font-size:18px;font-weight:700;border-bottom:0;border-top:2px solid var(--ink);padding-top:12px}
+@page{size:A4;margin:16mm 15mm 20mm}
+@media print{body{background:#fff}.top,nav,.foot,#modal,.noprint{display:none!important}
+.shell{padding:0;max-width:none}.doc{border:0;padding:0;max-width:none;font-size:10.4pt}
+.runfoot{display:block}}
+.runfoot{display:none;position:fixed;bottom:0;left:0;right:0;padding-top:5px;
+border-top:.5px solid #C9CEC5;font-size:7.8pt;color:#777;letter-spacing:.04em;
+display:none;justify-content:space-between}
+@media print{.runfoot{display:flex}}
+.cover{display:flex;flex-direction:column;min-height:236mm}
+.cover .grow{flex:1}
+.covertop{display:flex;justify-content:space-between;align-items:flex-start;gap:30px}
+.bigtitle{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1;margin:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 16px;font-size:10pt;line-height:1.6}
+.kv .k{color:#777}
+.party{border-top:1.5px solid var(--ink);padding-top:10px}
+.party .h{font-size:8.6pt;text-transform:uppercase;letter-spacing:.14em;color:#666;margin-bottom:7px}
+.secbar{color:var(--brand);border-bottom:2.5px solid var(--brand);padding:0 0 6px;
+font-size:9.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin:24px 0 0}
+.sumbox{max-width:340px;margin-left:auto;break-inside:avoid;page-break-inside:avoid}
+.sumwrap{break-inside:avoid;page-break-inside:avoid}
+.covfoot{border-top:1.5px solid var(--ink);padding-top:10px;display:flex;
+justify-content:space-between;gap:20px;font-size:9pt;color:#555;line-height:1.6}
+/* our own cover: a tall photo down one side, the words down the other */
+.cv{position:relative;height:252mm;display:flex;page-break-after:always;
+margin:-44px -52px 0;overflow:hidden;background:#fff}
+.cv .txt{flex:0 0 56%;padding:26mm 16mm 16mm 18mm;display:flex;flex-direction:column}
+.cv .shot{flex:1;position:relative;overflow:hidden;border-left:9px solid var(--brand)}
+.cv .shot img{width:100%;height:100%;object-fit:cover;object-position:center 45%;display:block}
+.cv .lg{margin-bottom:auto}
+.cv .lg img{max-width:210px;max-height:56px}
+.cv .ref{font-size:8.8pt;letter-spacing:.22em;text-transform:uppercase;color:var(--brand);
+font-weight:700;margin-bottom:14px}
+.cv .ti{font-size:30pt;line-height:1.12;font-weight:700;letter-spacing:-.025em;margin:0}
+.cv .ad{font-size:13pt;line-height:1.4;color:#4A4A4A;margin-top:14px;font-weight:400}
+.cv .brule{width:64px;height:0;border-top:5px solid var(--brand);margin:26px 0 22px}
+.cv .kvs{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:10pt;line-height:1.5}
+.cv .kvs .k{color:#8A8A8A;text-transform:uppercase;letter-spacing:.1em;font-size:8.4pt;padding-top:2px}
+.cv .who{margin-top:auto;padding-top:20px;border-top:1px solid #DDE1D9;font-size:9pt;
+color:#666;line-height:1.65}
+/* closing page: contact above, photo band below */
+.bk{height:252mm;display:flex;flex-direction:column;margin:-44px -52px 0;overflow:hidden;background:#fff}
+.bk .top2{padding:26mm 18mm 0}
+.bk .top2 img{max-width:210px;max-height:56px;margin-bottom:34px}
+.bk .hd{font-size:26pt;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+.bk .sub2{font-size:11pt;color:#555;max-width:420px;line-height:1.6}
+.bk .cols2{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:32px;font-size:10.5pt;line-height:1.8}
+.bk .cols2 .k{font-size:8.4pt;text-transform:uppercase;letter-spacing:.12em;color:#8A8A8A;
+display:block;margin-bottom:4px}
+.bk .bar{border-top:6px solid var(--brand);margin-top:auto}
+.bk .shot{height:88mm;overflow:hidden}
+.bk .shot img{width:100%;height:100%;object-fit:cover;object-position:center 58%;display:block}
+.intro{font-size:10pt;color:#555;line-height:1.6;margin:0 0 18px;max-width:560px}
+.simple td{padding:11px 8px}
+.simple .amt{text-align:right;white-space:nowrap;font-weight:600;width:22%}
+
+/* ---------- printable Gantt ---------- */
+.gpwrap{background:#fff;color:#1D2420;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+  padding:9mm 7mm;border:1px solid var(--line);border-radius:4px;margin-bottom:18px}
+.gpwrap.land{max-width:291mm}
+.gpwrap.port{max-width:204mm}
+@media print{.gpwrap{max-width:none!important;padding:0;border:0;margin:0;border-radius:0}}
+.gt .h2.tight{font-size:5.9pt}
+.gt .h2.tight b{font-size:6.2pt}
+.gt .h2.tight .wd{display:none}
+.gphead{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+  border-bottom:1.6px solid #1D2420;padding-bottom:9px;margin-bottom:11px}
+.gphead .lg img{max-width:150px;max-height:44px;height:auto;display:block;margin-bottom:6px}
+.gphead .oname{font-size:13px;font-weight:700;letter-spacing:-.01em}
+.gphead .osub{font-size:8pt;color:#666;line-height:1.5}
+.gphead .rt{text-align:right}
+.gphead .ti{font-size:17px;font-weight:700;letter-spacing:-.02em;margin:0 0 3px}
+.gphead .rg{font-size:9.6pt;font-weight:600}
+.gphead .as{font-size:8pt;color:#666;margin-top:2px}
+table.gt{width:100%;border-collapse:collapse;table-layout:fixed;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+table.gt th,table.gt td{padding:0;margin:0}
+.gt .m1{font-size:7.8pt;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  border-bottom:1px solid #1D2420;border-left:1px solid #1D2420;padding:3px 4px;
+  text-align:left;white-space:nowrap;overflow:hidden;background:#F1F3EF}
+.gt .h2{font-size:6.9pt;font-weight:600;color:#444;text-align:center;line-height:1.15;
+  border-bottom:1.4px solid #1D2420;border-left:.5px solid #D9DDD5;padding:2px 0;
+  white-space:nowrap;overflow:hidden}
+.gt .h2.we{background:#EBEDE8;color:#8A8F86}
+.gt .h2 b{display:block;font-size:7.3pt;color:#1D2420}
+.gt .nh{border-bottom:1.4px solid #1D2420;text-align:left;vertical-align:bottom;
+  font-size:7.8pt;font-weight:700;text-transform:uppercase;letter-spacing:.09em;
+  color:#555;padding:0 6px 3px 0;overflow:hidden}
+.gt .nh .jb{font-size:6.9pt;font-weight:600;color:#1D2420;text-transform:none;
+  letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:2px;padding-bottom:2px;border-bottom:.5px solid #E2E5DE}
+.gt tbody tr{page-break-inside:avoid;break-inside:avoid}
+.gt .nm{border-bottom:.5px solid #E2E5DE;padding:2.4px 8px 2.4px 0;vertical-align:middle;
+  overflow:hidden}
+.gt .nm .n{font-size:8.3pt;font-weight:600;line-height:1.2;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.gt .nm .s{font-size:6.6pt;color:#777;line-height:1.25;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;margin-top:.5px}
+.gt .c{border-bottom:.5px solid #E2E5DE;border-left:.5px solid #EDEFEA;height:17px}
+.gt .c.we{background:#F4F5F2}
+.gt .c.tdy,.gt .h2.tdy{border-left:1.4px dashed #A83A25}
+.gt .bc{border-bottom:.5px solid #E2E5DE;padding:0 .4px}
+.gt .bar{position:relative;height:11.5px;border-radius:2px;overflow:hidden;
+  display:flex;align-items:center}
+.gt .bar .pg{position:absolute;left:0;top:0;bottom:0}
+.gt .bar .lb{position:relative;font-size:6.6pt;font-weight:700;color:#fff;
+  padding:0 3px;white-space:nowrap;letter-spacing:.02em;
+  text-shadow:0 0 2px rgba(0,0,0,.45)}
+.gt .bar .cont{position:relative;font-size:7pt;font-weight:700;color:#fff;padding:0 2px}
+.gt .ms{height:10px;width:10px;transform:rotate(45deg);margin:0 auto;border-radius:1px}
+.gt .grp td{border-bottom:.8px solid #1D2420;border-top:.8px solid #1D2420;
+  background:#F1F3EF;padding:2.5px 0}
+.gt .grp .gl{font-size:7.6pt;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  padding-left:2px}
+.gpleg{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;padding-top:9px;
+  border-top:1px solid #D9DDD5;font-size:7.8pt;color:#555;align-items:center}
+.gpleg i{display:inline-block;width:15px;height:8px;border-radius:2px;margin-right:5px;
+  vertical-align:-1px}
+.gpleg .k{display:inline-flex;align-items:center;white-space:nowrap}
+.gpnote{font-size:7.8pt;color:#777;margin-top:9px;line-height:1.5}
+.gpfoot{display:none}
+@media print{
+  .gpfoot{display:flex;justify-content:space-between;font-size:7pt;color:#777;
+    letter-spacing:.04em;border-top:.5px solid #D9DDD5;padding-top:5px;margin-top:10px}
+}
+.gpbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 0}
+.gprange{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="modal"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+const CFG_KEY="mjgg:cfg";
+let sb=null,me=null,prof=null,job=null,jobs=[],tab="week",week=null,planWeek=null,busy=false,lastSync=null;
+let portfolio=null;
+const JOB_KEY="mjgg:job";
+let D={tasks:[],comments:[],files:[],scope:[],moves:[],plans:[],costs:[],crew:[],sheets:[],claims:[],lines:[],
+  clients:[],leads:[],ests:[],secs:[],items:[],allow:[],org:null,prices:[],measures:[]};
+let pickMode="week",claimAdj={},claimTo=null,pgQ="",costQ="",costCat="All",pickSection=null;
+let caps={costDue:true,prices:true,measures:true};   // what this database actually has
+let estId=null,printing=false,leadFilter="All",schedView="gantt";
+let gp=null;   // gantt PDF settings while the printable programme is on screen
+const DW=30;
+const PALETTE=["#86C98B","#F5A623","#F0736A","#A94442","#8C8CE0","#2E9E4F","#F3A0A0","#F5CE7A",
+"#8FA8E8","#8C7BE0","#F0A44E","#8FC0B0","#4A90D9","#8A8A8A","#5C8D89","#C08A4A"];
+const LSTAT=["New","Quoting","Quoted","Won","Lost","On hold"];
+const ESTAT=["Draft","Sent","Accepted","Declined","Expired"];
+const AREAS=["Entry","Stage 1","P1","P2","P3","P4","P5","P7","P9","P10","Villas","Other"];
+const CATS=["Labour","Materials","Plant / Equipment","Subcontractor","Delivery / Freight","Other"];
+const PAYS=["Paid","Part Paid","Payable","Awaiting Invoice","Internal / Accrued","To Confirm"];
+const CSTAT=["Draft","Submitted","Certified","Part paid","Paid"];
+const STATUS={"Done":"#2E6F4E","On the go":"#E8A33D","Not started":"#B9C0B6","At risk":"#A83A25"};
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0;};
+function money(n,dp){dp=dp||0;const v=n||0;return (v<0?"−$":"$")+Math.abs(v).toLocaleString("en-AU",{minimumFractionDigits:dp,maximumFractionDigits:dp});}
+const pctf=n=>((n||0)*100).toFixed(1)+"%";
+function isoOf(d){const x=new Date(d);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");}
+function mondayOf(d){const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));x.setHours(0,0,0,0);return x;}
+function addDays(s,n){const p=String(s).split("-").map(Number);return isoOf(new Date(p[0],p[1]-1,p[2]+n));}
+function fmtDay(s){if(!s)return"";const p=String(s).split("-").map(Number);
+  return new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-AU",{day:"numeric",month:"short"});}
+const fmtWeek=s=>fmtDay(s)+" – "+fmtDay(addDays(s,6));
+function longDate(s){ if(!s) return "";
+  const p=String(s).split("-").map(Number);
+  return new Date(p[0],p[1]-1,p[2]).toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"}); }
+function termsHtml(txt){
+  return String(txt||"").split(/\n\s*\n/).map(b=>{
+    const line=b.trim(); if(!line) return "";
+    const isHead=/^[0-9]+(\.[0-9]+)*\s+[A-Z]/.test(line)||/^[A-Z][A-Z0-9 &'(),.\-]{3,60}$/.test(line);
+    if(isHead&&line.length<80) return '<div class="th">'+esc(line)+'</div>';
+    const m=line.match(/^([0-9]+\.\s+[A-Z][A-Za-z '&\-]{2,50})\n([\s\S]*)$/);
+    if(m) return '<div class="th">'+esc(m[1])+'</div><p>'+esc(m[2])+'</p>';
+    return '<p>'+esc(line)+'</p>';
+  }).join("");
+}
+const admin=()=>prof&&(prof.role==="owner"||prof.role==="admin");
+const taskEnd=t=>addDays(t.start_date,Math.max(num(t.days),1)-1);
+const byId=(arr,id)=>arr.filter(x=>x.id===id)[0];
+const claimable=s=>s.kind!=="Variation"||s.variation_status==="Approved";
+const cell=(l,n,x,tone)=>'<div class="cell"><div class="cl">'+l+'</div><div class="cn '+(tone||"")+'">'+n+'</div>'+(x?'<div class="cx">'+x+'</div>':"")+'</div>';
+const fld=(l,i)=>'<div style="margin-top:8px"><span class="lab">'+l+'</span>'+i+'</div>';
+
+/* ---------------- connect ---------------- */
+function cfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||"null"); }catch(e){ return null; } }
+function setup(msg){
+  $("#root").innerHTML='<div class="mid"><div class="job">Connect to your database</div>'+
+    '<div class="sub">One time only. Supabase → Project Settings → API.</div>'+
+    '<span class="lab">Project URL</span><input class="in" id="cU" placeholder="https://xxxx.supabase.co">'+
+    '<span class="lab">anon public key</span><textarea class="in" id="cK" rows="4" placeholder="eyJ..."></textarea>'+
+    (msg?'<div class="err">'+esc(msg)+'</div>':'')+
+    '<div style="margin-top:14px"><button class="btn" id="cGo">Connect</button></div>'+
+    '<div class="ps" style="margin-top:14px">Never paste the service_role key. It ignores every permission rule.</div></div>';
+  $("#cGo").onclick=()=>{
+    const url=$("#cU").value.trim().replace(/\/$/,""),key=$("#cK").value.trim();
+    if(!/^https:\/\/.+\.supabase\.co$/.test(url)) return setup("That does not look like a project URL.");
+    if(key.length<40) return setup("That key looks too short.");
+    if(key.split(".").length===3){ try{
+      const b=JSON.parse(atob(key.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+      if(b.role==="service_role") return setup("That is the service_role key. Use the anon public key.");
+    }catch(e){} }
+    localStorage.setItem(CFG_KEY,JSON.stringify({url:url,key:key})); boot();
+  };
+}
+function login(msg){
+  $("#root").innerHTML='<div class="mid"><div class="job">MJ GreenGuard</div><div class="sub">Sign in</div>'+
+    '<span class="lab">Email</span><input class="in" id="lE" type="email" autocomplete="username">'+
+    '<span class="lab">Password</span><input class="in" id="lP" type="password" autocomplete="current-password">'+
+    (msg?'<div class="err">'+esc(msg)+'</div>':'')+
+    '<div style="margin-top:14px;display:flex;gap:8px"><button class="btn" id="lGo">Sign in</button>'+
+    '<button class="btn q" id="lReset">Change database</button></div></div>';
+  const go=async()=>{ $("#lGo").textContent="Signing in…";
+    const {error}=await sb.auth.signInWithPassword({email:$("#lE").value.trim(),password:$("#lP").value});
+    if(error) return login(error.message); boot(); };
+  $("#lGo").onclick=go; $("#lP").onkeydown=e=>{ if(e.key==="Enter") go(); };
+  $("#lReset").onclick=()=>{ localStorage.removeItem(CFG_KEY); setup(); };
+}
+async function boot(){
+  const c=cfg(); if(!c) return setup();
+  if(!sb) sb=window.supabase.createClient(c.url,c.key);
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session) return login();
+  me=session.user;
+  const {data:p,error}=await sb.from("profiles").select("*").eq("id",me.id).maybeSingle();
+  if(error) return login("Could not read your profile: "+error.message);
+  if(!p) return login("This login has no profile row yet.");
+  prof=p; await probe(); await loadAll();
+  await turnRatesOn();
+  watch();
+  if(!week) week=isoOf(mondayOf(new Date()));
+  if(!planWeek) planWeek=addDays(week,7);
+  render();
+}
+async function probe(){
+  const test=async (table,cols)=>{
+    const r=await sb.from(table).select(cols).limit(1);
+    return !r.error;
+  };
+  caps.costDue  = await test("costs","due_date");
+  caps.prices   = await test("price_items","id");
+  caps.measures = await test("measures","id");
+}
+async function loadAll(){
+  const j=await sb.from("jobs").select("*").order("created_at");
+  jobs=j.data||[];
+  const want=localStorage.getItem(JOB_KEY);
+  job=(want&&byId(jobs,want))||jobs[0]||null;
+  if(job) localStorage.setItem(JOB_KEY,job.id);
+  if(!job) return;
+  const [t,c,f]=await Promise.all([
+    sb.from("tasks").select("*").eq("job_id",job.id).order("start_date"),
+    sb.from("task_comments").select("*").order("created_at"),
+    sb.from("task_files").select("*").order("created_at")]);
+  D.tasks=t.data||[]; D.comments=c.data||[]; D.files=f.data||[];
+  if(admin()){
+    const r=await Promise.all([
+      sb.from("scope_items").select("*").eq("job_id",job.id).order("sort"),
+      sb.from("movements").select("*").eq("job_id",job.id),
+      sb.from("plan_items").select("*").eq("job_id",job.id),
+      sb.from("costs").select("*").eq("job_id",job.id).order("cost_date",{ascending:false}),
+      sb.from("crew").select("*"),
+      sb.from("timesheets").select("*").eq("job_id",job.id),
+      sb.from("claims").select("*").eq("job_id",job.id).order("created_at"),
+      sb.from("claim_lines").select("*"),
+      caps.measures ? sb.from("measures").select("*").eq("job_id",job.id).order("measured_on")
+                    : Promise.resolve({data:[]})]);
+    D.scope=r[0].data||[]; D.moves=r[1].data||[]; D.plans=r[2].data||[]; D.costs=r[3].data||[];
+    D.crew=r[4].data||[]; D.sheets=r[5].data||[]; D.claims=r[6].data||[]; D.lines=r[7].data||[];
+    D.measures=r[8].data||[];
+    const q=await Promise.all([
+      sb.from("clients").select("*").order("name"),
+      sb.from("leads").select("*").order("created_at",{ascending:false}),
+      sb.from("estimates").select("*").order("created_at",{ascending:false}),
+      sb.from("estimate_sections").select("*").order("sort"),
+      sb.from("estimate_items").select("*").order("sort"),
+      sb.from("estimate_allowances").select("*").order("sort"),
+      sb.from("orgs").select("*").limit(1),
+      caps.prices ? sb.from("price_items").select("*").order("name")
+                  : Promise.resolve({data:[]})]);
+    D.clients=q[0].data||[]; D.leads=q[1].data||[]; D.ests=q[2].data||[];
+    D.secs=q[3].data||[]; D.items=q[4].data||[]; D.allow=q[5].data||[];
+    D.org=(q[6].data&&q[6].data[0])||null; D.prices=q[7].data||[];
+  }else{
+    const s=await sb.from("scope_public").select("*").eq("job_id",job.id).order("sort");
+    D.scope=s.data||[];
+  }
+  lastSync=new Date();
+}
+function watch(){
+  sb.channel("live")
+   .on("postgres_changes",{event:"*",schema:"public",table:"tasks"},async()=>{
+      const t=await sb.from("tasks").select("*").eq("job_id",job.id).order("start_date");
+      D.tasks=t.data||D.tasks; lastSync=new Date(); if(!busy&&!typing()) render(); })
+   .on("postgres_changes",{event:"*",schema:"public",table:"task_comments"},async()=>{
+      const c=await sb.from("task_comments").select("*").order("created_at");
+      D.comments=c.data||D.comments; lastSync=new Date(); if(!busy&&!typing()) render(); })
+   .subscribe();
+}
+async function refresh(){ await loadAll(); render(); }
+
+/* Quotes made before the rate columns became the default still carry show_rates = false.
+   Switch them on once, then never touch the setting again so a deliberate choice sticks. */
+const RATES_FIX="mjgg:ratesfix";
+async function turnRatesOn(){
+  if(!admin()) return;
+  if(localStorage.getItem(RATES_FIX)) return;
+  const off=D.ests.filter(e=>e.show_rates!==true);
+  if(off.length){
+    const r=await sb.from("estimates").update({show_rates:true})
+      .in("id",off.map(e=>e.id)).select();
+    if(r.error){ console.warn("could not switch the rate columns on:",r.error.message); return; }
+    D.ests=D.ests.map(e=>Object.assign({},e,{show_rates:true}));
+  }
+  localStorage.setItem(RATES_FIX,"done");
+}
+
+/* ---------------- money ---------------- */
+function doneOf(id){
+  const s=byId(D.scope,id); if(!s) return 0;
+  let q=num(s.opening_qty);
+  D.moves.forEach(m=>{ if(m.scope_item_id===id) q+=num(m.qty); });
+  return Math.round(q*1000)/1000;
+}
+const sheetUnits=e=>Math.round([e.d0,e.d1,e.d2,e.d3,e.d4,e.d5,e.d6].reduce((a,b)=>a+num(b),0)*100)/100;
+function sheetCost(e){
+  if(e.override_amount!=null&&e.override_amount!=="") return num(e.override_amount);
+  const c=byId(D.crew,e.crew_id); return c?sheetUnits(e)*num(c.rate):0;
+}
+const claimValue=c=>D.lines.filter(l=>l.claim_id===c.id).reduce((a,l)=>{
+  const s=byId(D.scope,l.scope_item_id); return a+(s?num(l.qty)*num(s.rate):0);},0);
+const claimDue=c=>(c.certified!=null&&num(c.certified))?num(c.certified):claimValue(c);
+const claimOut=c=>Math.max(claimDue(c)-num(c.received),0);
+
+function model(){
+  let labour=0,subbie=0;
+  D.sheets.forEach(e=>{ const c=byId(D.crew,e.crew_id);
+    if(c&&c.category==="Subcontractor") subbie+=sheetCost(e); else labour+=sheetCost(e); });
+  const supply=D.costs.reduce((a,c)=>a+num(c.amount),0);
+  const actual=labour+subbie+supply;
+  const contract=D.scope.filter(s=>s.kind==="Original Contract").reduce((a,s)=>a+num(s.qty)*num(s.rate),0);
+  const measured=D.scope.filter(claimable).reduce((a,s)=>a+doneOf(s.id)*num(s.rate),0);
+  const pcM=D.scope.filter(s=>s.kind==="PC Item").reduce((a,s)=>a+doneOf(s.id)*num(s.rate),0);
+  const varAppr=D.scope.filter(s=>s.kind==="Variation"&&s.variation_status==="Approved").reduce((a,s)=>a+num(s.qty)*num(s.rate),0);
+  const varPend=D.scope.filter(s=>s.kind==="Variation"&&s.variation_status==="Submitted").reduce((a,s)=>a+num(s.qty)*num(s.rate),0);
+  const pendDone=D.scope.filter(s=>s.kind==="Variation"&&s.variation_status!=="Approved").reduce((a,s)=>a+doneOf(s.id)*num(s.rate),0);
+  const value=contract+varAppr+pcM;
+  const claimedBy={}; D.lines.forEach(l=>claimedBy[l.scope_item_id]=(claimedBy[l.scope_item_id]||0)+num(l.qty));
+  const claimed=D.claims.reduce((a,c)=>a+claimValue(c),0);
+  const received=D.claims.reduce((a,c)=>a+num(c.received),0);
+  const owed=D.claims.filter(c=>c.status!=="Draft").reduce((a,c)=>a+claimOut(c),0);
+  const ready=D.scope.filter(claimable).reduce((a,s)=>a+Math.max(doneOf(s.id)-(claimedBy[s.id]||0),0)*num(s.rate),0);
+  const B={"Materials":"materials","Plant / Equipment":"plant","Subcontractor":"subbie",
+    "Delivery / Freight":"other","Other":"other","Labour":"labour"};
+  const byWeek={}; const touch=w=>byWeek[w]=byWeek[w]||{earned:0,labour:0,subbie:0,materials:0,plant:0,other:0};
+  D.sheets.forEach(e=>{const c=byId(D.crew,e.crew_id);
+    if(c&&c.category==="Subcontractor") touch(e.week_start).subbie+=sheetCost(e);
+    else touch(e.week_start).labour+=sheetCost(e);});
+  D.costs.forEach(c=>touch(c.week_start)[B[c.category]||"other"]+=num(c.amount));
+  D.moves.forEach(m=>{const s=byId(D.scope,m.scope_item_id);
+    if(s&&claimable(s)) touch(m.week_start).earned+=num(m.qty)*num(s.rate);});
+  return {labour:labour,subbie:subbie,supply:supply,actual:actual,contract:contract,value:value,
+    measured:measured,profit:measured-actual,margin:measured?(measured-actual)/measured:0,
+    pendDone:pendDone,profitAll:(measured+pendDone)-actual,
+    marginAll:(measured+pendDone)?((measured+pendDone)-actual)/(measured+pendDone):0,
+    claimed:claimed,received:received,owed:owed,ready:ready,claimedBy:claimedBy,varPend:varPend,byWeek:byWeek};
+}
+
+/* ---------------- render ---------------- */
+let pendingRender=false;
+function typing(){
+  const a=document.activeElement;
+  return !!a && (a.tagName==="INPUT"||a.tagName==="TEXTAREA");
+}
+function render(){
+  if(typing()){ pendingRender=true; return; }   // finish the sentence first
+  if(gp){ gpPageStyle(true,gp.orient);
+    $("#root").innerHTML='<div class="shell">'+
+      '<div class="noprint gpbar">'+
+      '<button class="btn" data-act="gpprint">Print or save as PDF</button>'+
+      '<button class="btn q" data-act="gpopen">Change the dates</button>'+
+      '<button class="btn q" data-act="gpshift" data-n="-7">◀ a week back</button>'+
+      '<button class="btn q" data-act="gpshift" data-n="7">a week on ▶</button>'+
+      '<button class="btn q" data-act="gpclose">Back to the schedule</button>'+
+      '<span class="ps" style="flex:1;min-width:240px">In the print box open '+
+      '<b>More settings</b>, tick <b>Background graphics</b> so the bars come out in colour, and '+
+      'untick <b>Headers and footers</b> to drop the date and the web address.</span></div>'+
+      viewGantPdf()+'</div>'; return; }
+  gpPageStyle(false);
+  if(printing){ $("#root").innerHTML='<div class="shell">'+
+      '<div class="noprint" style="padding:14px 0;display:flex;gap:8px">'+
+      '<button class="btn" data-act="doprint">Print or save as PDF</button>'+
+      '<button class="btn q" data-act="unprint">Back to editing</button>'+
+      '<span class="ps" style="align-self:center">In the print box open <b>More settings</b> and '+
+      'untick <b>Headers and footers</b> — that removes the date and the file path.</span></div>'+
+      docHtml()+'</div>'; return; }
+  const tabs=admin()
+    ?[["week","This week"],["plan","Plan"],["sched","Schedule"],["money","Money"],
+      ["progress","Progress"]].concat(caps.measures?[["measure","Measure"]]:[])
+      .concat([["costs","Costs"],["claims","Claims"],["crew","Crew"],
+      ["leads","Leads"],["quotes","Quotes"]])
+      .concat(caps.prices?[["prices","Price list"]]:[])
+      .concat([["clients","Clients"],["jobs","Jobs"],["biz","Business"],["check","Check"]])
+    :[["sched","Schedule"]];
+  if(!tabs.some(t=>t[0]===tab)) tab=tabs[0][0];
+  const m=admin()?model():null;
+  $("#root").innerHTML='<div class="shell"><div class="top">'+
+    '<div style="min-width:240px"><div class="job">'+esc(job?job.name:"No job yet")+'</div>'+
+    '<div class="sub">'+esc(job&&job.ref?job.ref:"")+'</div>'+
+    (jobs.length>1?'<select class="in" style="margin-top:6px;max-width:330px" data-act="jobpick">'+
+      jobs.map(x=>'<option value="'+x.id+'"'+(job&&job.id===x.id?" selected":"")+'>'+esc(x.name)+
+      (x.status!=="Active"?" ("+esc(x.status)+")":"")+'</option>').join("")+'</select>':'')+'</div>'+
+    (m?'<div style="margin-left:auto;text-align:right"><div style="font-size:26px;font-weight:700;line-height:1" class="'+
+      (m.profit>=0?"pos":"neg")+'">'+money(m.profit)+'</div><div class="ps">'+
+      (m.profit>=0?"ahead":"behind")+' · '+pctf(m.margin)+' margin · approved work</div>'+
+      (m.pendDone>0?'<div class="ps" style="margin-top:3px">with '+money(m.pendDone)+
+        ' awaiting approval: <b>'+money(m.profitAll)+' · '+pctf(m.marginAll)+'</b></div>':'')+
+      '</div>':'')+
+    '<div class="me" style="'+(m?"margin-left:14px":"")+'">'+esc(prof.full_name||me.email)+'<br>'+
+    '<span class="chip">'+esc(prof.role)+'</span> <button class="btn q sm" id="out">Sign out</button></div></div>'+
+    '<nav>'+tabs.map(t=>'<button class="tab'+(tab===t[0]?" on":"")+'" data-tab="'+t[0]+'">'+t[1]+'</button>').join("")+'</nav>'+
+    '<div id="view"></div><div class="foot"><span class="live"></span>Live'+
+    (lastSync?" · updated "+lastSync.toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"}):"")+'</div></div>';
+  $("#out").onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+  const v=$("#view");
+  if(!job&&tab!=="jobs"&&tab!=="clients"&&tab!=="leads"&&tab!=="quotes"){
+    v.innerHTML='<div class="panel"><div class="empty">No job open yet. '+
+      'Go to <strong>Jobs</strong> and make one.</div></div>'; return; }
+  if(tab==="sched"){ v.innerHTML=viewSched(); setTimeout(showPhotos,0); }
+  else if(tab==="week") v.innerHTML=viewWeek();
+  else if(tab==="plan") v.innerHTML=viewPlan();
+  else if(tab==="money") v.innerHTML=viewMoney(m);
+  else if(tab==="progress") v.innerHTML=viewProgress(m);
+  else if(tab==="measure") v.innerHTML=viewMeasure(m);
+  else if(tab==="costs") v.innerHTML=viewCosts(m);
+  else if(tab==="claims") v.innerHTML=viewClaims(m);
+  else if(tab==="leads") v.innerHTML=viewLeads();
+  else if(tab==="quotes") v.innerHTML=estId?viewEstimate():viewQuotes();
+  else if(tab==="prices") v.innerHTML=viewPrices();
+  else if(tab==="clients") v.innerHTML=viewClients();
+  else if(tab==="jobs"){ v.innerHTML=viewJobs(); if(!portfolio) loadPortfolio(); }
+  else if(tab==="biz") v.innerHTML=viewBiz();
+  else if(tab==="check") v.innerHTML=viewCheck();
+  else v.innerHTML=viewCrew();
+}
+
+function dayDiff(a,b){const p=a.split("-").map(Number),q=b.split("-").map(Number);
+  return Math.round((new Date(q[0],q[1]-1,q[2])-new Date(p[0],p[1]-1,p[2]))/86400000);}
+function monLab(mk,from,to){const p=mk.split("-").map(Number);
+  return '<div class="gmon" style="left:'+(from*DW)+'px;width:'+((to-from)*DW)+'px">'+
+    new Date(p[0],p[1]-1,1).toLocaleDateString("en-AU",{month:"long",year:"numeric"})+'</div>';}
+function viewGantt(){
+  const ts=D.tasks.slice().sort((a,b)=>a.start_date<b.start_date?-1:1);
+  if(!ts.length) return '<div class="empty">No tasks yet.</div>';
+  let first=ts[0].start_date,last=taskEnd(ts[0]);
+  ts.forEach(t=>{ if(t.start_date<first) first=t.start_date; const e=taskEnd(t); if(e>last) last=e; });
+  const today=isoOf(new Date());
+  if(today<first) first=today; if(today>last) last=today;
+  first=addDays(first,-3); last=addDays(last,7);
+  const total=dayDiff(first,last)+1,W=total*DW;
+  let cells="",months="",curM="",curStart=0;
+  for(let i=0;i<total;i++){
+    const d=addDays(first,i),p=d.split("-").map(Number),dt=new Date(p[0],p[1]-1,p[2]);
+    const we=dt.getDay()===0||dt.getDay()===6;
+    cells+='<div class="gday'+(we?" we":"")+'" style="left:'+(i*DW)+'px;width:'+DW+'px">'+
+      '<div class="gdlab">'+String(p[2]).padStart(2,"0")+'</div></div>';
+    const mk=p[0]+"-"+p[1];
+    if(mk!==curM){ if(curM) months+=monLab(curM,curStart,i); curM=mk; curStart=i; }
+  }
+  months+=monLab(curM,curStart,total);
+  const tx=dayDiff(first,today)*DW;
+  let h='<div class="gwrap"><div style="min-width:'+(250+W)+'px">'+
+    '<div class="grow ghead"><div class="gleft">Task</div>'+
+    '<div class="gtrack" style="width:'+W+'px;height:38px">'+months+
+    '<div style="position:absolute;top:17px;left:0;right:0;bottom:0">'+cells+'</div>'+
+    (tx>=0&&tx<=W?'<div class="gtoday" style="left:'+tx+'px"></div>':'')+'</div></div>';
+  ts.forEach((t,idx)=>{
+    const off=dayDiff(first,t.start_date)*DW,w=Math.max(num(t.days),1)*DW-4;
+    const sc=t.scope_item_id?byId(D.scope,t.scope_item_id):null;
+    h+='<div class="grow"><div class="gleft">'+
+      '<span class="dot" style="margin-top:0;background:'+(STATUS[t.status]||"#B9C0B6")+'"></span>'+
+      '<span style="flex:1;min-width:0"><span class="gname">'+esc(t.name)+'</span>'+
+      '<div class="gmeta">'+fmtDay(t.start_date)+' · '+num(t.days)+(num(t.days)===1?" day":" days")+
+      (t.assignee?' · '+esc(t.assignee):'')+(num(t.pct)?' · '+num(t.pct)+'%':'')+
+      (sc?' · '+esc(sc.code):'')+'</div></span>'+
+      '<button class="x" data-act="taskedit" data-id="'+t.id+'">✎</button></div>'+
+      '<div class="gtrack" style="width:'+W+'px">'+cells+
+      (tx>=0&&tx<=W?'<div class="gtoday" style="left:'+tx+'px"></div>':'')+
+      '<div class="gbar" style="left:'+off+'px;width:'+w+'px;background:'+(t.colour||PALETTE[idx%PALETTE.length])+'">'+
+      '<span style="position:absolute;left:0;top:0;bottom:0;width:'+num(t.pct)+'%;background:rgba(0,0,0,.22)"></span>'+
+      '<span style="position:relative">'+esc(t.name)+'</span></div></div></div>';
+  });
+  return h+'</div></div>';
+}
+/* ---------------- printable Gantt (PDF) ---------------- */
+function darker(hex,amt){
+  const h=String(hex||"#86C98B").replace("#","");
+  const f=h.length===3?h.split("").map(c=>c+c).join(""):h;
+  const n=parseInt(f,16); if(!isFinite(n)) return "#5E8A62";
+  const k=amt==null?.42:amt;
+  const r=Math.round(((n>>16)&255)*(1-k)),g=Math.round(((n>>8)&255)*(1-k)),b=Math.round((n&255)*(1-k));
+  return "#"+[r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("");
+}
+function jobSpan(){
+  const ts=D.tasks.filter(t=>t.start_date);
+  if(!ts.length){ const t0=isoOf(mondayOf(new Date())); return [t0,addDays(t0,27)]; }
+  let a=ts[0].start_date,b=taskEnd(ts[0]);
+  ts.forEach(t=>{ if(t.start_date<a) a=t.start_date; const e=taskEnd(t); if(e>b) b=e; });
+  return [a,b];
+}
+const GPRESETS=[
+  ["This week",     ()=>{const m=isoOf(mondayOf(new Date()));return [m,addDays(m,6)];}],
+  ["Next 2 weeks",  ()=>{const m=isoOf(mondayOf(new Date()));return [m,addDays(m,13)];}],
+  ["Next 4 weeks",  ()=>{const m=isoOf(mondayOf(new Date()));return [m,addDays(m,27)];}],
+  ["This month",    ()=>{const d=new Date(),y=d.getFullYear(),mo=d.getMonth();
+                         return [isoOf(new Date(y,mo,1)),isoOf(new Date(y,mo+1,0))];}],
+  ["Next 3 months", ()=>{const d=new Date(),y=d.getFullYear(),mo=d.getMonth();
+                         return [isoOf(new Date(y,mo,1)),isoOf(new Date(y,mo+3,0))];}],
+  ["Whole job",     ()=>jobSpan()]
+];
+function gpForm(){
+  const s=gp||{};
+  const sp=jobSpan();
+  const from=s.from||isoOf(mondayOf(new Date())),to=s.to||addDays(from,27);
+  const areas=Array.from(new Set(D.tasks.map(t=>{
+    const sc=t.scope_item_id?byId(D.scope,t.scope_item_id):null; return sc&&sc.area?sc.area:""; })
+    .filter(Boolean))).sort();
+  return '<div class="ph"><div><div class="pt">Export the programme</div>'+
+    '<div class="ps">Pick the dates you want on the page, then print or save it as a PDF.</div></div>'+
+    '<button class="x" data-act="close">✕</button></div><div style="padding:14px">'+
+    '<div class="grid2">'+
+    fld("From",'<input class="in" type="date" id="g_from" value="'+esc(from)+'">')+
+    fld("To",'<input class="in" type="date" id="g_to" value="'+esc(to)+'">')+
+    '</div>'+
+    '<div class="gprange">'+GPRESETS.map((p,i)=>
+      '<button class="btn q sm" data-act="gpreset" data-i="'+i+'">'+esc(p[0])+'</button>').join("")+'</div>'+
+    '<div class="ps" style="margin-top:8px">The whole job runs '+fmtDay(sp[0])+' to '+fmtDay(sp[1])+'.</div>'+
+    '<div class="grid2" style="margin-top:4px">'+
+    fld("Columns",'<select class="in" id="g_scale">'+
+      [["auto","Fit automatically"],["day","One per day"],["week","One per week"],["month","One per month"]]
+      .map(o=>'<option value="'+o[0]+'"'+((s.scale||"auto")===o[0]?" selected":"")+'>'+o[1]+'</option>').join("")+
+      '</select>')+
+    fld("Page",'<select class="in" id="g_orient">'+
+      [["land","A4 landscape"],["port","A4 portrait"]]
+      .map(o=>'<option value="'+o[0]+'"'+((s.orient||"land")===o[0]?" selected":"")+'>'+o[1]+'</option>').join("")+
+      '</select>')+
+    '</div>'+
+    (areas.length>1?fld("Area",'<select class="in" id="g_area"><option value="">Every area</option>'+
+      areas.map(a=>'<option'+(s.area===a?" selected":"")+'>'+esc(a)+'</option>').join("")+'</select>'):
+      '<input type="hidden" id="g_area" value="">')+
+    '<div style="margin-top:12px;display:grid;gap:7px">'+
+    '<label class="ps" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="g_done"'+
+      (s.hideDone?" checked":"")+'> Leave finished tasks off the page</label>'+
+    '<label class="ps" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="g_grp"'+
+      (s.group?" checked":"")+'> Group the rows by area</label>'+
+    '<label class="ps" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="g_who"'+
+      (s.showWho===false?"":" checked")+'> Show who is on each task</label>'+
+    '<label class="ps" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="g_pct"'+
+      (s.showPct===false?"":" checked")+'> Shade how far each task has got</label>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:15px">'+
+    '<button class="btn q" data-act="close">Cancel</button>'+
+    '<button class="btn hi" data-act="gpgo">Make the PDF</button></div></div>';
+}
+/* build the column list for a range at a given scale */
+function gpCols(from,to,scale){
+  const n=dayDiff(from,to)+1,cols=[];
+  if(scale==="day"){
+    for(let i=0;i<n;i++){ const d=addDays(from,i),p=d.split("-").map(Number);
+      const dt=new Date(p[0],p[1]-1,p[2]);
+      cols.push({a:d,b:d,lab:String(p[2]).padStart(2,"0"),sub:DAYS[(dt.getDay()+6)%7][0],
+        we:dt.getDay()===0||dt.getDay()===6,grp:p[0]+"-"+p[1],
+        gl:dt.toLocaleDateString("en-AU",{month:"long",year:"numeric"})});
+    }
+  } else if(scale==="week"){
+    let w=isoOf(mondayOf(new Date(from.split("-")[0],from.split("-")[1]-1,from.split("-")[2])));
+    while(w<=to){ const e=addDays(w,6),p=w.split("-").map(Number);
+      const dt=new Date(p[0],p[1]-1,p[2]);
+      cols.push({a:w,b:e,lab:String(p[2]).padStart(2,"0")+"/"+String(p[1]).padStart(2,"0"),sub:"wk",
+        we:false,grp:p[0]+"-"+p[1],
+        gl:dt.toLocaleDateString("en-AU",{month:"long",year:"numeric"})});
+      w=addDays(w,7); }
+  } else {
+    const p=from.split("-").map(Number); let y=p[0],mo=p[1]-1;
+    while(isoOf(new Date(y,mo,1))<=to){
+      const a=isoOf(new Date(y,mo,1)),b=isoOf(new Date(y,mo+1,0));
+      cols.push({a:a,b:b,lab:new Date(y,mo,1).toLocaleDateString("en-AU",{month:"short"}),sub:"",
+        we:false,grp:String(y),gl:String(y)});
+      mo++; if(mo>11){mo=0;y++;} }
+  }
+  return cols;
+}
+function gpPickScale(from,to,orient,forced){
+  const track=orient==="port"?142:214;                    // mm left for the timeline
+  if(forced&&forced!=="auto") return forced;
+  const days=dayDiff(from,to)+1;
+  if(track/days>=3.9) return "day";
+  const wk=gpCols(from,to,"week").length;
+  if(track/wk>=8.4) return "week";
+  return "month";
+}
+function viewGantPdf(){
+  const o=D.org||{},g=gp;
+  const from=g.from,to=g.to;
+  const scale=gpPickScale(from,to,g.orient,g.scale);
+  const cols=gpCols(from,to,scale);
+  const nameW=g.orient==="port"?48:60;
+  const track=(g.orient==="port"?190:277)-nameW;
+  const colW=track/cols.length;
+  const today=isoOf(new Date());
+
+  /* which tasks show */
+  let ts=D.tasks.filter(t=>t.start_date&&taskEnd(t)>=from&&t.start_date<=to);
+  const outside=D.tasks.length-ts.length;
+  if(g.hideDone) ts=ts.filter(t=>t.status!=="Done");
+  if(g.area) ts=ts.filter(t=>{ const sc=t.scope_item_id?byId(D.scope,t.scope_item_id):null;
+    return sc&&sc.area===g.area; });
+  ts.sort((a,b)=>a.start_date<b.start_date?-1:a.start_date>b.start_date?1:
+    (String(a.name||"")<String(b.name||"")?-1:1));
+
+  /* group the rows */
+  let groups;
+  if(g.group){
+    const m={};
+    ts.forEach(t=>{ const sc=t.scope_item_id?byId(D.scope,t.scope_item_id):null;
+      const k=(sc&&sc.area)?sc.area:"Other";
+      (m[k]=m[k]||[]).push(t); });
+    const order=AREAS.filter(a=>m[a]).concat(Object.keys(m).filter(k=>AREAS.indexOf(k)<0).sort());
+    groups=order.map(k=>[k,m[k]]);
+  } else groups=[[null,ts]];
+
+  /* header rows: period bands + column labels */
+  let band="",cur=null,curFrom=0;
+  cols.forEach((c,i)=>{ if(c.grp!==cur){ if(cur!==null)
+      band+='<th class="m1" colspan="'+(i-curFrom)+'">'+esc(cols[curFrom].gl)+'</th>';
+      cur=c.grp; curFrom=i; } });
+  band+='<th class="m1" colspan="'+(cols.length-curFrom)+'">'+esc(cols[curFrom].gl)+'</th>';
+  const tdyIx=cols.findIndex(c=>today>=c.a&&today<=c.b);
+  const tight=colW<4.6;
+  const lab=cols.map((c,i)=>'<th class="h2'+(c.we?" we":"")+(i===tdyIx?" tdy":"")+(tight?" tight":"")+'">'+
+    (c.sub&&c.sub!=="wk"?'<span class="wd">'+c.sub+'</span><b>'+c.lab+'</b>':"<b>"+c.lab+"</b>")+'</th>').join("");
+
+  /* rows */
+  let body="";
+  groups.forEach(([gname,list])=>{
+    if(gname) body+='<tr class="grp"><td class="gl">'+esc(gname)+'</td><td colspan="'+cols.length+'"></td></tr>';
+    if(!list.length) return;
+    list.forEach((t,idx)=>{
+      const st=t.start_date,en=taskEnd(t);
+      const sc=t.scope_item_id?byId(D.scope,t.scope_item_id):null;
+      let a=cols.findIndex(c=>en>=c.a&&st<=c.b);
+      let b=-1; cols.forEach((c,i)=>{ if(en>=c.a&&st<=c.b) b=i; });
+      if(a<0){ a=0; b=-1; }
+      const span=b>=a?b-a+1:0;
+      const col=t.colour||PALETTE[idx%PALETTE.length];
+      const dk=darker(col,.45);
+      const pct=Math.max(0,Math.min(100,num(t.pct)));
+      const late=t.status!=="Done"&&en<today;
+      const clipL=st<from,clipR=en>to;
+      const one=span===1&&num(t.days)===1&&scale==="day";
+      let mid="";
+      if(span>0){
+        const wide=colW*span;
+        const txt=(g.showPct!==false&&pct>0?pct+"%":"")||"";
+        /* shade how far it has got, measured in real dates so a clipped bar stays honest */
+        let shade=0;
+        if(g.showPct!==false&&pct>0){
+          const bs=cols[a].a>st?cols[a].a:st, be=cols[b].b<en?cols[b].b:en;
+          const doneTo=addDays(st,Math.max(1,Math.round(pct/100*Math.max(num(t.days),1)))-1);
+          if(doneTo>=bs){
+            const end=doneTo<be?doneTo:be;
+            shade=Math.min(100,(dayDiff(bs,end)+1)/(dayDiff(bs,be)+1)*100);
+          }
+        }
+        const edge=late?"#A83A25":dk, ew=late?"1.4px":".9px";
+        const inner=one
+          ?'<div class="ms" style="background:'+col+';border:1.1px solid '+edge+'"></div>'
+          :'<div class="bar" style="background:'+col+';border:'+ew+' solid '+edge+'">'+
+            (shade>0?'<span class="pg" style="width:'+shade.toFixed(1)+'%;background:'+dk+'"></span>':'')+
+            (clipL?'<span class="cont">◀</span>':'')+
+            (txt&&wide>=11?'<span class="lb">'+txt+'</span>':'')+
+            (clipR?'<span class="cont" style="margin-left:auto">▶</span>':'')+'</div>';
+        mid='<td class="bc" colspan="'+span+'">'+inner+'</td>';
+      }
+      let cells="";
+      for(let i=0;i<cols.length;i++){
+        if(span>0&&i===a){ cells+=mid; i=b; continue; }
+        cells+='<td class="c'+(cols[i].we?" we":"")+(i===tdyIx?" tdy":"")+'"></td>';
+      }
+      const meta=[fmtDay(st)+" – "+fmtDay(en),
+        late?"LATE":"",
+        num(t.days)+(num(t.days)===1?" day":" days"),
+        (g.showWho!==false&&t.assignee)?esc(t.assignee):"",
+        sc?esc(sc.code):""].filter(Boolean).join(" · ");
+      body+='<tr><td class="nm"><div class="n">'+esc(t.name)+'</div>'+
+        '<div class="s">'+meta+'</div></td>'+cells+'</tr>';
+    });
+  });
+  if(!ts.length) body='<tr><td class="nm" colspan="'+(cols.length+1)+
+    '" style="padding:18px 0;font-size:9pt;color:#777">No tasks fall inside these dates.</td></tr>';
+
+  const mark=o.logo?'<img src="'+o.logo+'" alt="">':'';
+  const used=Array.from(new Set(ts.map(t=>t.status)));
+  const dn=ts.filter(t=>t.status==="Done").length;
+  const avg=ts.length?Math.round(ts.reduce((s,t)=>s+num(t.pct),0)/ts.length):0;
+
+  return '<div class="gpwrap '+(g.orient==="port"?"port":"land")+'"><div class="gphead">'+
+    '<div><div class="lg">'+mark+'</div>'+
+    (o.logo?'':'<div class="oname">'+esc(o.name||"")+'</div>')+
+    '<div class="osub">'+(o.logo?esc(o.name||""):"")+(o.abn?(o.logo?' · ':'')+'ABN '+esc(o.abn):"")+
+      (o.licence?'<br>QBCC '+esc(o.licence):"")+
+      (o.phone?' · '+esc(o.phone):"")+'</div></div>'+
+    '<div class="rt"><div class="ti">Construction Programme</div>'+
+    '<div class="rg">'+esc(job?job.name:"")+'</div>'+
+    (job&&job.ref?'<div class="as">'+esc(job.ref)+'</div>':"")+
+    '<div class="as" style="margin-top:5px;color:#1D2420;font-weight:600">'+
+      fmtDay(from)+' to '+longDate(to)+'</div>'+
+    '<div class="as">Printed '+longDate(today)+
+      ' · '+ts.length+' task'+(ts.length===1?"":"s")+
+      (g.area?' · '+esc(g.area):"")+'</div></div></div>'+
+    '<table class="gt"><colgroup><col style="width:'+nameW+'mm">'+
+      cols.map(()=>'<col style="width:'+colW.toFixed(3)+'mm">').join("")+'</colgroup>'+
+    '<thead><tr><th class="nh" rowspan="2"><div class="jb">'+esc(job?job.name:"")+
+      ' · '+fmtDay(from)+' – '+fmtDay(to)+'</div>Task</th>'+band+'</tr><tr>'+lab+'</tr></thead>'+
+    '<tbody>'+body+'</tbody></table>'+
+    '<div class="gpleg">'+
+      '<span class="k"><i style="background:'+PALETTE[0]+';border:.9px solid '+darker(PALETTE[0],.45)+'"></i>Task</span>'+
+      (g.showPct!==false?'<span class="k"><i style="background:'+darker(PALETTE[0],.45)+'"></i>Done so far</span>':"")+
+      '<span class="k"><i style="background:#fff;border:1.6px solid #A83A25"></i>Behind</span>'+
+      '<span class="k"><i style="background:#F4F5F2;border:.5px solid #D9DDD5"></i>Weekend</span>'+
+      (tdyIx>=0?'<span class="k"><i style="background:#fff;border-left:1.6px dashed #A83A25;border-radius:0;width:8px"></i>Today</span>':"")+
+      '<span class="k">◀ ▶ runs on past these dates</span>'+
+      '<span class="k" style="margin-left:auto;font-weight:600;color:#1D2420">'+
+        dn+' of '+ts.length+' finished · '+avg+'% average</span>'+
+    '</div>'+
+    (outside||g.hideDone||g.area?'<div class="gpnote">'+
+      [outside?outside+' task'+(outside===1?"":"s")+' fall outside these dates and are not shown.':"",
+       g.hideDone?'Finished tasks have been left off.':"",
+       g.area?'Only '+esc(g.area)+' is shown.':""].filter(Boolean).join(" ")+'</div>':"")+
+    '<div class="gpfoot"><span>'+esc(o.name||"")+(o.licence?' · QBCC '+esc(o.licence):"")+'</span>'+
+    '<span>'+esc(job?job.name:"")+' · programme '+fmtDay(from)+' – '+fmtDay(to)+'</span></div>'+
+    '</div>';
+}
+function gpPageStyle(on,orient){
+  let el=document.getElementById("gppage");
+  if(!on){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement("style"); el.id="gppage"; document.head.appendChild(el); }
+  el.textContent="@page{size:A4 "+(orient==="port"?"portrait":"landscape")+";margin:9mm 10mm 15mm}";
+}
+
+function taskForm(t){
+  const f=t||{name:"",start_date:isoOf(new Date()),days:1,assignee:"",status:"Not started",
+    colour:PALETTE[0],pct:0,scope_item_id:""};
+  return '<div class="ph"><div class="pt">'+(t?"Edit task":"Add task")+'</div>'+
+    '<button class="x" data-act="close">✕</button></div><div style="padding:14px">'+
+    fld("Task",'<input class="in" id="t_name" value="'+esc(f.name)+'">')+
+    '<div class="grid2">'+
+    fld("Start",'<input class="in" type="date" id="t_start" value="'+esc(f.start_date)+'">')+
+    fld("Days",'<input class="in" inputmode="numeric" id="t_days" value="'+esc(f.days)+'">')+
+    fld("Who",'<input class="in" id="t_who" placeholder="Kyle, subby, TBC" value="'+esc(f.assignee||"")+'">')+
+    fld("Status",'<select class="in" id="t_status">'+Object.keys(STATUS).map(s=>'<option'+(f.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select>')+
+    fld("Progress %",'<input class="in" inputmode="numeric" id="t_pct" value="'+esc(f.pct)+'">')+
+    fld("Colour",'<select class="in" id="t_colour">'+PALETTE.map((c,i)=>'<option value="'+c+'"'+(f.colour===c?" selected":"")+'>Colour '+(i+1)+'</option>').join("")+'</select>')+
+    '</div>'+
+    fld("Linked scope line",'<select class="in" id="t_scope"><option value="">Not linked</option>'+
+      D.scope.map(s=>'<option value="'+s.id+'"'+(f.scope_item_id===s.id?" selected":"")+'>'+
+      esc(s.label||s.code)+' — '+esc((s.description||"").slice(0,48))+'</option>').join("")+'</select>')+
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">'+
+    (t?'<button class="btn q" data-act="taskdel" data-id="'+t.id+'" style="margin-right:auto">Delete</button>':'')+
+    '<button class="btn q" data-act="close">Cancel</button>'+
+    '<button class="btn" data-act="tasksave" data-id="'+(t?t.id:"")+'">Save</button></div></div>';
+}
+function viewSched(){
+  const today=isoOf(new Date());
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Schedule</div>'+
+    '<div class="ps">'+D.tasks.length+' tasks'+(admin()?"":" · tap a percentage as you go")+'</div></div>'+
+    (admin()?'<div style="display:flex;gap:7px;flex-wrap:wrap">'+
+      '<button class="btn q" data-act="schedview">'+(schedView==="gantt"?"Show as a list":"Show the timeline")+'</button>'+
+      '<button class="btn q" data-act="schedtoday">Jump to today</button>'+
+      '<button class="btn q" data-act="gpopen">Export PDF</button>'+
+      '<button class="btn hi" data-act="taskadd">+ Add task</button></div>':'')+'</div>';
+  if(!D.tasks.length) return h+'<div class="empty">No tasks yet.</div></div>';
+  if(admin()&&schedView==="gantt") return h+viewGantt()+'</div>';
+  D.tasks.forEach(t=>{
+    const late=t.status!=="Done"&&taskEnd(t)<today;
+    const cs=D.comments.filter(c=>c.task_id===t.id);
+    const ph=D.files.filter(f=>f.task_id===t.id);
+    const sc=t.scope_item_id?byId(D.scope,t.scope_item_id):null;
+    h+='<div class="task"><div style="display:flex;gap:10px;align-items:flex-start">'+
+      '<span class="dot" style="background:'+(STATUS[t.status]||"#B9C0B6")+'"></span>'+
+      '<span style="flex:1;min-width:0"><div class="tname">'+esc(t.name)+'</div>'+
+      '<div class="tmeta">'+fmtDay(t.start_date)+' → '+fmtDay(taskEnd(t))+' · '+num(t.days)+
+      (num(t.days)===1?" day":" days")+(t.assignee?" · "+esc(t.assignee):"")+
+      (late?' · <span class="neg" style="font-weight:600">overdue</span>':"")+
+      (sc?" · "+esc(sc.code)+" "+pctf(Math.min(doneOf(sc.id)/(num(sc.qty)||1),1))+" measured":"")+
+      '</div></span>'+
+      '<select class="in" style="width:120px;padding:5px 6px;font-size:12.5px" data-act="st" data-id="'+t.id+'">'+
+      Object.keys(STATUS).map(s=>'<option'+(t.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select></div>'+
+      '<div class="pbar"><i style="width:'+num(t.pct)+'%"></i></div>'+
+      '<div class="pctrow"><span class="ps" style="min-width:62px">'+num(t.pct)+'% done</span>'+
+      [0,25,50,75,100].map(p=>'<button class="pctbtn'+(num(t.pct)===p?" on":"")+'" data-act="pct" data-id="'+t.id+'" data-p="'+p+'">'+p+'%</button>').join("")+
+      '</div><div class="pctrow"><button class="btn q sm" data-act="note" data-id="'+t.id+'">+ Note</button>'+
+      '<label class="btn q sm" style="margin:0">+ Photo<input type="file" accept="image/*" capture="environment" style="display:none" data-act="photo" data-id="'+t.id+'"></label>'+
+      (cs.length?'<span class="chip">'+cs.length+' note'+(cs.length===1?"":"s")+'</span>':"")+'</div>';
+    cs.forEach(c=>h+='<div class="cmt"><b style="font-size:12.5px">'+esc(c.author||"Site")+'</b> <span class="ps">'+
+      new Date(c.created_at).toLocaleString("en-AU")+'</span><div>'+esc(c.body)+'</div></div>');
+    if(ph.length) h+='<div class="photos" id="ph_'+t.id+'"></div>';
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+async function showPhotos(){
+  for(const t of D.tasks){
+    const box=document.getElementById("ph_"+t.id); if(!box) continue;
+    box.innerHTML="";
+    for(const f of D.files.filter(x=>x.task_id===t.id)){
+      const {data}=await sb.storage.from("site-files").createSignedUrl(f.path,3600);
+      if(data&&data.signedUrl){ const im=document.createElement("img"); im.src=data.signedUrl; box.appendChild(im); }
+    }
+  }
+}
+
+/* ---------------- system check ---------------- */
+let checkResult=null,checking=false;
+async function runCheck(){
+  checking=true; checkResult=[]; render();
+  const org=prof.org_id;
+  const j=(jobs[0]||{}).id, sc=(D.scope[0]||{}).id, cr=(D.crew[0]||{}).id;
+  const est=(D.ests[0]||{}).id, sec=(D.secs[0]||{}).id, cm=(D.claims[0]||{}).id;
+  const tests=[
+    ["clients",       {org_id:org,name:"__check__"}],
+    ["leads",         {org_id:org,title:"__check__",status:"New"}],
+    ["jobs",          {org_id:org,name:"__check__",status:"Active"}],
+    ["price_items",   {org_id:org,name:"__check__",cost:0}],
+    ["estimates",     {org_id:org,number:"__check__",title:"__check__"}],
+    ["estimate_sections", est?{estimate_id:est,name:"__check__",sort:999}:null],
+    ["estimate_items",    sec?{section_id:sec,description:"__check__",qty:0,cost_each:0}:null],
+    ["estimate_allowances", est?{estimate_id:est,description:"__check__",amount:0}:null],
+    ["scope_items",   j?{org_id:org,job_id:j,code:"__check__",qty:0,rate:0}:null],
+    ["crew",          {org_id:org,name:"__check__"}],
+    ["costs",         j?{org_id:org,job_id:j,cost_date:isoOf(new Date()),
+                         week_start:isoOf(mondayOf(new Date())),supplier:"__check__",amount:0}:null],
+    ["claims",        j?{org_id:org,job_id:j,no:"__check__"}:null],
+    ["claim_lines",   (cm&&sc)?{claim_id:cm,scope_item_id:sc,qty:0}:null],
+    ["tasks",         j?{org_id:org,job_id:j,name:"__check__",start_date:isoOf(new Date())}:null],
+    ["task_comments", (D.tasks[0]||{}).id?{org_id:org,task_id:D.tasks[0].id,body:"__check__"}:null],
+    ["movements",     (j&&sc)?{org_id:org,job_id:j,scope_item_id:sc,
+                         week_start:"1990-01-01",qty:0}:null],
+    ["plan_items",    (j&&sc)?{org_id:org,job_id:j,scope_item_id:sc,
+                         week_start:"1990-01-02",qty:0}:null],
+  ];
+  const out=[];
+  for(const [table,row] of tests){
+    if(!row){ out.push({table:table,ok:null,msg:"nothing to test against yet"}); continue; }
+    const ins=await sb.from(table).insert(row).select().single();
+    if(ins.error){ out.push({table:table,ok:false,msg:ins.error.message}); continue; }
+    const del=await sb.from(table).delete().eq("id",ins.data.id);
+    out.push({table:table,ok:!del.error,msg:del.error?("added but could not remove: "+del.error.message):"add and remove both fine"});
+  }
+  // the org row is updated, never inserted
+  const o=await sb.from("orgs").update({name:(D.org||{}).name}).eq("id",org).select();
+  out.push({table:"orgs",ok:!o.error&&(o.data||[]).length>0,
+    msg:o.error?o.error.message:((o.data||[]).length?"can be updated":"update was refused")});
+  checkResult=out; checking=false; render();
+}
+const FIXES={
+ costDue:{name:"Invoice due dates on costs",
+   sql:"alter table costs add column if not exists due_date date;\n"+
+       "alter table costs add column if not exists terms_days int;\n"+
+       "notify pgrst, 'reload schema';"},
+ prices:{name:"Price list",
+   sql:"create table if not exists price_items (\n"+
+       "  id uuid primary key default gen_random_uuid(),\n"+
+       "  org_id uuid not null references orgs on delete cascade,\n"+
+       "  code text, name text not null, category text, unit text,\n"+
+       "  cost numeric(14,4) default 0, margin_pct numeric(6,2) default 20,\n"+
+       "  supplier text, note text, active boolean default true,\n"+
+       "  used_count int default 0, updated_at timestamptz default now());\n"+
+       "alter table price_items enable row level security;\n"+
+       "drop policy if exists money_only on price_items;\n"+
+       "create policy money_only on price_items for all\n"+
+       "  using (org_id = my_org() and sees_money())\n"+
+       "  with check (org_id = my_org() and sees_money());\n"+
+       "notify pgrst, 'reload schema';"},
+ measures:{name:"Measurement register",
+   sql:"create table if not exists measures (\n"+
+       "  id uuid primary key default gen_random_uuid(),\n"+
+       "  org_id uuid not null references orgs on delete cascade,\n"+
+       "  job_id uuid not null references jobs on delete cascade,\n"+
+       "  scope_item_id uuid references scope_items on delete set null,\n"+
+       "  measured_on date default current_date,\n"+
+       "  block text, plant text, size text, qty numeric(14,3) default 0,\n"+
+       "  source text default 'Site count', reference text,\n"+
+       "  verified boolean default false, note text,\n"+
+       "  created_at timestamptz default now());\n"+
+       "alter table measures enable row level security;\n"+
+       "drop policy if exists money_only on measures;\n"+
+       "create policy money_only on measures for all\n"+
+       "  using (org_id = my_org() and sees_money())\n"+
+       "  with check (org_id = my_org() and sees_money());\n"+
+       "notify pgrst, 'reload schema';"}};
+
+function viewMissing(){
+  const gone=Object.keys(FIXES).filter(k=>!caps[k]);
+  if(!gone.length) return '<div class="note"><div>Everything this app uses is in your database.</div></div>';
+  let h='<div class="panel" style="border-color:var(--neg)"><div class="ph"><div>'+
+    '<div class="pt">Not switched on yet</div><div class="ps">'+gone.length+
+    ' feature'+(gone.length===1?" is":"s are")+' hidden because the database has not been set up for '+
+    'them. The app works fine without them.</div></div></div>';
+  gone.forEach(k=>{
+    h+='<div style="padding:14px;border-bottom:1px solid var(--line)">'+
+      '<div style="font-weight:600;margin-bottom:6px">'+esc(FIXES[k].name)+'</div>'+
+      '<textarea class="in" rows="'+Math.min(FIXES[k].sql.split("\n").length,10)+
+      '" readonly style="font-family:ui-monospace,monospace;font-size:11.5px" '+
+      'onclick="this.select()">'+esc(FIXES[k].sql)+'</textarea>'+
+      '<div style="margin-top:8px"><button class="btn q sm" data-act="copyfix" data-k="'+k+'">Copy this</button>'+
+      '<span class="ps" style="margin-left:10px">Paste it into Supabase → SQL Editor → Run</span></div></div>';
+  });
+  return h+'</div>';
+}
+function viewCheck(){
+  let h=viewMissing()+
+    '<div class="panel"><div class="ph"><div><div class="pt">System check</div>'+
+    '<div class="ps">Writes a test row to every table and removes it again, so you can see '+
+    'exactly what the database will and will not let you do</div></div>'+
+    '<button class="btn hi" data-act="runcheck"'+(checking?" disabled":"")+'>'+
+    (checking?"Checking…":"Run the check")+'</button></div>';
+  if(!checkResult) return h+'<div class="empty">Not run yet.</div></div>';
+  const bad=checkResult.filter(r=>r.ok===false);
+  h+='<table><tbody>';
+  checkResult.forEach(r=>h+='<tr><td style="font-weight:600;width:200px">'+esc(r.table)+'</td>'+
+    '<td class="'+(r.ok===false?"neg":r.ok?"pos":"ps")+'" style="font-weight:600;width:90px">'+
+    (r.ok===false?"BLOCKED":r.ok?"OK":"skipped")+'</td><td class="ps">'+esc(r.msg)+'</td></tr>');
+  h+='</tbody></table></div>';
+  if(bad.length) h+='<div class="note" style="border-color:#F0C4B8;background:#FDF1EE"><div>'+
+    bad.length+' table'+(bad.length===1?" is":"s are")+' blocked. Run <b>11-fix-all-policies.sql</b> '+
+    'in Supabase, then check again.</div></div>';
+  else h+='<div class="note"><div>Everything the app needs to write, it can write.</div></div>';
+  return h;
+}
+
+/* ---------------- measurement register ---------------- */
+const SOURCES=["Drawing","Timberwolf docket","Site count","Delivery docket","Other"];
+let measScope="All";
+function measuredFor(scopeId){
+  return D.measures.filter(x=>x.scope_item_id===scopeId).reduce((a,x)=>a+num(x.qty),0);
+}
+function claimedFor(scopeId){
+  return D.lines.filter(l=>l.scope_item_id===scopeId).reduce((a,l)=>a+num(l.qty),0);
+}
+function viewMeasure(m){
+  const used={}; D.measures.forEach(x=>{ if(x.scope_item_id) used[x.scope_item_id]=1; });
+  const check=D.scope.filter(s=>used[s.id]||doneOf(s.id)>0||claimedFor(s.id)>0)
+    .map(s=>({s:s,meas:measuredFor(s.id),rec:doneOf(s.id),clm:claimedFor(s.id)}));
+  const off=check.filter(r=>Math.abs(r.meas-r.rec)>0.001&&r.meas>0);
+  const over=check.filter(r=>r.clm>r.meas+0.001&&r.meas>0);
+
+  let h='<div class="band">'+
+    cell("Measurements on file",String(D.measures.length),"across "+Object.keys(used).length+" scope lines")+
+    cell("Lines that disagree",String(off.length),"measured against recorded",off.length?"neg":"pos")+
+    cell("Claimed beyond evidence",String(over.length),"claimed more than measured",over.length?"neg":"pos")+
+    cell("Unverified",String(D.measures.filter(x=>!x.verified).length),"not yet ticked off")+
+    '</div>';
+
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Claim check</div>'+
+    '<div class="ps">What you have measured, against what the app records and what you have claimed</div></div></div>'+
+    '<div class="scroll"><table><thead><tr><th>Line</th><th style="min-width:180px">Scope</th>'+
+    '<th class="r">Measured</th><th class="r">Recorded</th><th class="r">Difference</th>'+
+    '<th class="r">Claimed</th><th class="r">Safe to claim</th><th></th></tr></thead><tbody>';
+  if(!check.length) h+='<tr><td colspan="8" class="ps" style="padding:22px;text-align:center">'+
+    'Nothing measured yet. Add your first measurement below.</td></tr>';
+  check.forEach(r=>{
+    const diff=Math.round((r.meas-r.rec)*1000)/1000;
+    const safe=Math.max((r.meas>0?r.meas:r.rec)-r.clm,0);
+    h+='<tr><td style="font-weight:600">'+esc(r.s.label||r.s.code)+'</td>'+
+      '<td style="max-width:300px"><div class="clamp">'+esc(r.s.description)+'</div></td>'+
+      '<td class="r">'+(r.meas?r.meas.toFixed(1):"–")+'</td>'+
+      '<td class="r">'+(r.rec?r.rec.toFixed(1):"–")+'</td>'+
+      '<td class="r '+(r.meas&&Math.abs(diff)>0.001?"neg":"")+'">'+(r.meas?(diff>0?"+":"")+diff:"–")+'</td>'+
+      '<td class="r">'+(r.clm?r.clm.toFixed(1):"–")+'</td>'+
+      '<td class="r" style="font-weight:600">'+safe.toFixed(1)+' <span class="ps">'+money(safe*num(r.s.rate))+'</span></td>'+
+      '<td>'+(r.meas&&Math.abs(diff)>0.001?
+        '<button class="btn q sm" data-act="usemeas" data-id="'+r.s.id+'">Use measured</button>':'')+'</td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+
+  const lines=D.scope.filter(s=>measScope==="All"||s.id===measScope);
+  const list=D.measures.filter(x=>measScope==="All"||x.scope_item_id===measScope);
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Measurement register</div>'+
+    '<div class="ps">'+list.length+' entries. Every quantity with where it came from.</div></div>'+
+    '<div style="display:flex;gap:7px;flex-wrap:wrap">'+
+    '<select class="in" style="width:auto;max-width:260px" data-act="measfilter">'+
+    '<option value="All">All scope lines</option>'+
+    D.scope.map(s=>'<option value="'+s.id+'"'+(measScope===s.id?" selected":"")+'>'+
+      esc(s.label||s.code)+'</option>').join("")+'</select>'+
+    '<button class="btn hi" data-act="measadd">+ Add a measurement</button></div></div>';
+  if(!list.length) h+='<div class="empty">Nothing recorded yet.</div>';
+  else{
+    h+='<div class="scroll"><table><thead><tr><th>Date</th><th>Block</th><th>Plant</th><th>Size</th>'+
+      '<th class="r">Qty</th><th>Against</th><th>Source</th><th>Reference</th><th>Checked</th><th></th></tr></thead><tbody>';
+    list.forEach(x=>{
+      const s=byId(D.scope,x.scope_item_id);
+      h+='<tr><td><input class="in" type="date" style="width:140px" value="'+esc(x.measured_on||"")+'" data-act="me" data-f="measured_on" data-id="'+x.id+'"></td>'+
+        '<td><input class="in" style="width:150px" value="'+esc(x.block||"")+'" data-act="me" data-f="block" data-id="'+x.id+'"></td>'+
+        '<td><input class="in" style="width:170px" value="'+esc(x.plant||"")+'" data-act="me" data-f="plant" data-id="'+x.id+'"></td>'+
+        '<td><input class="in" style="width:76px" value="'+esc(x.size||"")+'" data-act="me" data-f="size" data-id="'+x.id+'"></td>'+
+        '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(x.qty)+'" data-act="me" data-f="qty" data-id="'+x.id+'"></td>'+
+        '<td><select class="in" style="width:150px" data-act="me" data-f="scope_item_id" data-id="'+x.id+'">'+
+        '<option value="">—</option>'+D.scope.map(sc=>'<option value="'+sc.id+'"'+(x.scope_item_id===sc.id?" selected":"")+'>'+
+          esc(sc.label||sc.code)+'</option>').join("")+'</select></td>'+
+        '<td><select class="in" style="width:150px" data-act="me" data-f="source" data-id="'+x.id+'">'+
+        SOURCES.map(o=>'<option'+(x.source===o?" selected":"")+'>'+o+'</option>').join("")+'</select></td>'+
+        '<td><input class="in" style="width:130px" value="'+esc(x.reference||"")+'" data-act="me" data-f="reference" data-id="'+x.id+'"></td>'+
+        '<td><button class="btn q sm" data-act="meverify" data-id="'+x.id+'">'+(x.verified?"Checked":"Not yet")+'</button></td>'+
+        '<td><button class="x" data-act="medel" data-id="'+x.id+'">✕</button></td></tr>';
+    });
+    const byS={};
+    list.forEach(x=>{ const k=(x.size||"?"); byS[k]=(byS[k]||0)+num(x.qty); });
+    h+='<tr class="tot"><td colspan="4">Total measured</td><td class="r">'+
+      list.reduce((a,x)=>a+num(x.qty),0).toFixed(1)+'</td><td colspan="5" class="ps">'+
+      Object.keys(byS).sort().map(k=>esc(k)+" "+byS[k].toFixed(0)).join(" · ")+'</td></tr>';
+    h+='</tbody></table></div>';
+  }
+  return h+'</div>';
+}
+
+/* ---------------- price list ---------------- */
+let priceQ="";
+function viewPrices(){
+  const list=D.prices.filter(x=>priceQ===""||
+    ((x.name+" "+(x.code||"")+" "+(x.category||"")+" "+(x.supplier||"")).toLowerCase()
+      .indexOf(priceQ.toLowerCase())>=0));
+  let h='<div class="note"><div>Your own rates, kept in one place. Add a line here once and it drops '+
+    'into any quote with its cost and margin already set. Change a price here and the next quote uses '+
+    'the new one — quotes you have already sent keep their own figures.</div></div>'+
+    '<div class="panel"><div class="ph"><div><div class="pt">Price list</div>'+
+    '<div class="ps">'+list.length+' of '+D.prices.length+' items</div></div>'+
+    '<div style="display:flex;gap:7px;flex-wrap:wrap">'+
+    '<input class="in" style="width:200px" placeholder="Search" value="'+esc(priceQ)+'" data-act="priceq">'+
+    '<button class="btn hi" data-act="priceadd">+ Add an item</button></div></div>';
+  if(!list.length) return h+'<div class="empty">Nothing here yet.</div></div>';
+  h+='<div class="scroll"><table><thead><tr><th>Code</th><th style="min-width:220px">Item</th>'+
+    '<th>Category</th><th>Unit</th><th class="r">Cost</th><th class="r">Margin %</th>'+
+    '<th class="r">Sell</th><th>Supplier</th><th class="r">Used</th><th></th></tr></thead><tbody>';
+  list.forEach(x=>{
+    const sell=num(x.cost)*(1+num(x.margin_pct)/100);
+    h+='<tr><td><input class="in" style="width:90px" value="'+esc(x.code||"")+'" data-act="pi" data-f="code" data-id="'+x.id+'"></td>'+
+      '<td><input class="in" style="font-weight:600" value="'+esc(x.name)+'" data-act="pi" data-f="name" data-id="'+x.id+'"></td>'+
+      '<td><input class="in" style="width:120px" value="'+esc(x.category||"")+'" data-act="pi" data-f="category" data-id="'+x.id+'"></td>'+
+      '<td><input class="in" style="width:64px" value="'+esc(x.unit||"")+'" data-act="pi" data-f="unit" data-id="'+x.id+'"></td>'+
+      '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(x.cost)+'" data-act="pi" data-f="cost" data-id="'+x.id+'"></td>'+
+      '<td class="r"><input class="in qty" style="width:70px" inputmode="decimal" value="'+esc(x.margin_pct)+'" data-act="pi" data-f="margin_pct" data-id="'+x.id+'"></td>'+
+      '<td class="r" style="font-weight:600">'+money(sell,2)+'</td>'+
+      '<td><input class="in" style="width:120px" value="'+esc(x.supplier||"")+'" data-act="pi" data-f="supplier" data-id="'+x.id+'"></td>'+
+      '<td class="r ps">'+num(x.used_count)+'</td>'+
+      '<td><button class="x" data-act="pidel" data-id="'+x.id+'">✕</button></td></tr>';
+  });
+  return h+'</tbody></table></div></div>';
+}
+function pricePicker(q){
+  const list=D.prices.filter(x=>x.active!==false&&(!q||
+    ((x.name+" "+(x.code||"")+" "+(x.category||"")).toLowerCase().indexOf(q.toLowerCase())>=0)))
+    .sort((a,b)=>num(b.used_count)-num(a.used_count)).slice(0,60);
+  return '<div class="ph"><div class="pt">Add from the price list</div>'+
+    '<button class="x" data-act="close">✕</button></div><div style="padding:14px">'+
+    '<input class="in" id="pickQ" placeholder="Search your rates" value="'+esc(q||"")+'" data-act="ppq">'+
+    '<div style="border:1px solid var(--line);border-radius:3px;max-height:52vh;overflow:auto;margin-top:10px">'+
+    (list.length?list.map(x=>{
+      const sell=num(x.cost)*(1+num(x.margin_pct)/100);
+      return '<button class="pick" data-act="ppone" data-id="'+x.id+'">'+
+        '<span style="flex:1;min-width:0"><span style="font-weight:600;font-size:13px">'+esc(x.name)+'</span>'+
+        '<div class="ps">'+esc(x.code||"")+(x.category?' · '+esc(x.category):"")+
+        (x.supplier?' · '+esc(x.supplier):"")+'</div></span>'+
+        '<span style="text-align:right;white-space:nowrap;font-size:12px">'+money(sell,2)+
+        ' <span class="ps">per '+esc(x.unit||"")+'</span><div class="ps">cost '+money(num(x.cost),2)+
+        ' + '+num(x.margin_pct)+'%</div></span></button>';
+    }).join(""):'<div class="empty">Nothing matches. Add it on the Price list tab.</div>')+
+    '</div></div>';
+}
+
+/* ---------------- business details ---------------- */
+function viewBiz(){
+  const o=D.org||{};
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Your logo</div>'+
+    '<div class="ps">Prints at the top of every quote</div></div>'+
+    '<div style="display:flex;gap:7px">'+
+    '<label class="btn hi" style="margin:0">'+(o.logo?"Replace logo":"Upload logo")+
+    '<input type="file" accept="image/*" style="display:none" data-act="logoup"></label>'+
+    (o.logo?'<button class="btn q" data-act="logodel">Remove</button>':'')+'</div></div>'+
+    '<div style="padding:18px;text-align:center;background:#fff">'+
+    (o.logo?'<img src="'+o.logo+'" style="max-width:340px;max-height:120px">'
+      :'<div class="ps">No logo yet. A PNG with a transparent or white background works best. '+
+       'It gets trimmed and resized for you.</div>')+'</div></div>';
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Quote cover photos</div>'+
+    '<div class="ps">Front and back pages of every quote</div></div></div>'+
+    '<div style="padding:14px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">'+
+    ['cover_image','back_image'].map((f,i)=>
+      '<div><div class="lab">'+(i?"Back cover photo":"Front cover photo")+'</div>'+
+      '<div style="height:130px;border:1px solid var(--line);border-radius:3px;background:#EDEFEA '+
+      (o[f]?'url('+esc(o[f])+') center/cover':"")+'"></div>'+
+      '<div style="margin-top:8px;display:flex;gap:7px">'+
+      '<label class="btn q sm" style="margin:0">'+(o[f]?"Replace":"Upload")+
+      '<input type="file" accept="image/*" style="display:none" data-act="shotup" data-f="'+f+'"></label>'+
+      (o[f]?'<button class="btn q sm" data-act="shotdel" data-f="'+f+'">Remove</button>':'')+
+      '</div></div>').join("")+
+    '</div></div>';
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Standard wording</div>'+
+    '<div class="ps">What every new quote starts with</div></div></div><div style="padding:14px">'+
+    fld("Default specification",'<textarea class="in" rows="5" data-act="og" data-f="default_spec">'+
+      esc(o.default_spec||"")+'</textarea>')+
+    fld("Default terms and conditions",'<textarea class="in" rows="10" data-act="og" data-f="default_terms">'+
+      esc(o.default_terms||"")+'</textarea>')+
+    '<div class="ps" style="margin-top:6px">'+
+    (o.default_terms?String(o.default_terms).length+" characters saved":"nothing saved yet")+
+    '</div></div></div>';
+  h+='<div class="panel"><div class="ph"><div class="pt">Business details</div>'+
+    '<div class="ps">These print on quotes</div></div><div style="padding:14px"><div class="grid2">'+
+    fld("Business name",'<input class="in" value="'+esc(o.name||"")+'" data-act="og" data-f="name">')+
+    fld("Phone",'<input class="in" value="'+esc(o.phone||"")+'" data-act="og" data-f="phone">')+
+    fld("Email",'<input class="in" value="'+esc(o.email||"")+'" data-act="og" data-f="email">')+
+    fld("Website",'<input class="in" value="'+esc(o.website||"")+'" data-act="og" data-f="website">')+
+    fld("Licence",'<input class="in" placeholder="QBCC 15471933" value="'+esc(o.licence||"")+'" data-act="og" data-f="licence">')+
+    fld("ABN",'<input class="in" value="'+esc(o.abn||"")+'" data-act="og" data-f="abn">')+
+    '</div>'+fld("Address",'<input class="in" value="'+esc(o.address||"")+'" data-act="og" data-f="address">')+
+    fld("Terms layout",'<select class="in" data-act="og" data-f="terms_cols">'+
+      '<option value="1"'+(num(o.terms_cols)===2?"":" selected")+'>One column, full width</option>'+
+      '<option value="2"'+(num(o.terms_cols)===2?" selected":"")+'>Two columns, fewer pages</option></select>')+
+    fld("Brand colour",'<input class="in" type="color" style="max-width:90px;padding:3px" value="'+
+      esc(o.brand||"#3D4E60")+'" data-act="og" data-f="brand">')+
+    fld("Next quote number",'<input class="in" style="max-width:160px" inputmode="numeric" value="'+esc(o.quote_seq||1774)+'" data-act="og" data-f="quote_seq">')+
+    '<div class="ps" style="margin-top:6px">Your next quote will be '+esc(nextQuoteNo())+'.</div>'+
+    '</div></div>';
+  return h;
+}
+
+/* ---------------- jobs across the business ---------------- */
+async function loadPortfolio(){
+  const r=await Promise.all([
+    sb.from("scope_items").select("job_id,kind,qty,rate,opening_qty,id,variation_status"),
+    sb.from("movements").select("job_id,scope_item_id,qty"),
+    sb.from("costs").select("job_id,amount"),
+    sb.from("timesheets").select("job_id,crew_id,d0,d1,d2,d3,d4,d5,d6,override_amount"),
+    sb.from("crew").select("id,rate,category")]);
+  const sc=r[0].data||[],mv=r[1].data||[],co=r[2].data||[],ts=r[3].data||[],cw=r[4].data||[];
+  const rateOf={}; cw.forEach(c=>rateOf[c.id]=c);
+  const doneBy={}; sc.forEach(s=>doneBy[s.id]=num(s.opening_qty));
+  mv.forEach(m=>{ if(doneBy[m.scope_item_id]!==undefined) doneBy[m.scope_item_id]+=num(m.qty); });
+  const P={};
+  const touch=id=>P[id]=P[id]||{contract:0,measured:0,cost:0};
+  sc.forEach(s=>{ const p=touch(s.job_id);
+    if(s.kind==="Original Contract") p.contract+=num(s.qty)*num(s.rate);
+    if(s.kind!=="Variation"||s.variation_status==="Approved") p.measured+=doneBy[s.id]*num(s.rate); });
+  co.forEach(c=>touch(c.job_id).cost+=num(c.amount));
+  ts.forEach(e=>{ const c=rateOf[e.crew_id];
+    const v=(e.override_amount!=null&&e.override_amount!=="")?num(e.override_amount)
+      :(c?[e.d0,e.d1,e.d2,e.d3,e.d4,e.d5,e.d6].reduce((a,b)=>a+num(b),0)*num(c.rate):0);
+    touch(e.job_id).cost+=v; });
+  portfolio=P; render();
+}
+function viewJobs(){
+  let h='';
+  if(portfolio){
+    let C=0,M=0,K=0;
+    jobs.forEach(j=>{const p=portfolio[j.id]||{contract:0,measured:0,cost:0};
+      if(j.status!=="Complete"){C+=p.contract;} M+=p.measured; K+=p.cost;});
+    h+='<div class="band">'+
+      cell("Jobs on the books",String(jobs.filter(j=>j.status==="Active").length),jobs.length+" in total")+
+      cell("Contract value",money(C),"Active and on hold")+
+      cell("Measured to date",money(M),"Across every job")+
+      cell("Profit to date",money(M-K),M?pctf((M-K)/M)+" margin":"",M-K>=0?"pos":"neg")+
+      '</div>';
+  }
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Jobs</div>'+
+    '<div class="ps">'+jobs.length+' on the books'+(portfolio?"":" · working out the numbers…")+'</div></div>'+
+    '<button class="btn hi" data-act="jobadd">+ New job</button></div><div class="scroll"><table>'+
+    '<thead><tr><th style="min-width:200px">Job</th><th>Reference</th><th>Client</th><th>Status</th>'+
+    '<th class="r">Contract</th><th class="r">Measured</th><th class="r">Cost</th><th class="r">Profit</th>'+
+    '<th class="r">Margin</th><th></th></tr></thead><tbody>';
+  jobs.forEach(j=>{
+    const p=portfolio?(portfolio[j.id]||{contract:0,measured:0,cost:0}):null;
+    const pf=p?p.measured-p.cost:0;
+    h+='<tr'+(job&&job.id===j.id?' style="background:#FCFEEF"':'')+'>'+
+      '<td><input class="in" style="font-weight:600" value="'+esc(j.name)+'" data-act="jb" data-f="name" data-id="'+j.id+'"></td>'+
+      '<td><input class="in" style="width:150px" value="'+esc(j.ref||"")+'" data-act="jb" data-f="ref" data-id="'+j.id+'"></td>'+
+      '<td><select class="in" style="width:150px" data-act="jb" data-f="client_id" data-id="'+j.id+'">'+
+      '<option value="">—</option>'+D.clients.map(c=>'<option value="'+c.id+'"'+(j.client_id===c.id?" selected":"")+'>'+esc(c.name)+'</option>').join("")+'</select></td>'+
+      '<td><select class="in" style="width:110px" data-act="jb" data-f="status" data-id="'+j.id+'">'+
+      ["Active","On hold","Complete"].map(s=>'<option'+(j.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select></td>'+
+      (p?'<td class="r">'+money(p.contract)+'</td><td class="r">'+money(p.measured)+'</td>'+
+         '<td class="r">'+money(p.cost)+'</td><td class="r '+(pf>=0?"pos":"neg")+'" style="font-weight:600">'+money(pf)+'</td>'+
+         '<td class="r">'+(p.measured?pctf(pf/p.measured):"–")+'</td>'
+        :'<td colspan="5" class="ps r">…</td>')+
+      '<td style="white-space:nowrap">'+(job&&job.id===j.id?'<span class="chip">open</span>'
+        :'<button class="btn q sm" data-act="jobopen" data-id="'+j.id+'">Open</button>')+
+      '<button class="x" data-act="jobdel" data-id="'+j.id+'">✕</button></td></tr>';
+  });
+  return h+'</tbody></table></div></div>'+
+    '<div class="note"><div>A new job starts with no scope. Open it, go to <strong>Progress</strong> '+
+    'and add the lines from the bill of quantities — code, description, unit, quantity and rate. '+
+    'Everything else follows from those.</div></div>';
+}
+
+function viewWeek(){
+  const es=D.sheets.filter(e=>e.week_start===week);
+  const cs=D.costs.filter(c=>c.week_start===week);
+  const mvs=D.moves.filter(x=>x.week_start===week);
+  const labour=es.reduce((a,e)=>a+sheetCost(e),0);
+  const supply=cs.reduce((a,c)=>a+num(c.amount),0);
+  const earned=mvs.reduce((a,x)=>{const s=byId(D.scope,x.scope_item_id);
+    return a+(s&&claimable(s)?num(x.qty)*num(s.rate):0);},0);
+  const cost=labour+supply,res=earned-cost;
+  let h='<div class="panel"><div class="ph">'+
+    '<div style="display:flex;align-items:center;gap:8px">'+
+    '<button class="x" data-act="wk" data-d="-7">‹</button>'+
+    '<div><div class="pt">'+fmtWeek(week)+'</div><div class="ps">Week starting Monday '+fmtDay(week)+'</div></div>'+
+    '<button class="x" data-act="wk" data-d="7">›</button></div>'+
+    '<input class="in" type="date" style="width:160px" value="'+week+'" data-act="wkset"></div>'+
+    '<div class="band" style="border:0">'+
+    cell("Measured this week",money(earned),mvs.length+" scope lines")+
+    cell("Cost this week",money(cost),money(labour)+" crew · "+money(supply)+" supply")+
+    cell("Week result",money(res),earned?pctf(res/earned)+" margin":"nothing measured",res>=0?"pos":"neg")+
+    '</div></div>';
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Work done this week</div>'+
+    '<div class="ps">Just this week\'s quantity</div></div>'+
+    '<button class="btn hi" data-act="pick">+ Add scope line</button></div>';
+  if(!mvs.length) h+='<div class="empty">Nothing measured this week yet.</div>';
+  else{
+    h+='<div class="scroll"><table><thead><tr><th>ID</th><th style="min-width:200px">Scope</th>'+
+      '<th class="r">Before</th><th class="r">This week</th><th class="r">Rate</th><th class="r">Value</th>'+
+      '<th class="r">Total done</th><th></th></tr></thead><tbody>';
+    mvs.forEach(mv=>{ const s=byId(D.scope,mv.scope_item_id); if(!s) return;
+      const total=doneOf(s.id),before=Math.round((total-num(mv.qty))*100)/100;
+      h+='<tr><td><div style="font-weight:600">'+esc(s.label||s.code)+'</div><div class="ps">'+esc(s.unit||"")+'</div></td>'+
+        '<td style="max-width:320px"><div class="clamp">'+esc(s.description)+'</div></td>'+
+        '<td class="r">'+(before||"–")+'</td>'+
+        '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(mv.qty)+'" data-act="mvq" data-id="'+mv.id+'"></td>'+
+        '<td class="r">'+money(num(s.rate),2)+'</td>'+
+        '<td class="r" style="font-weight:600">'+money(num(mv.qty)*num(s.rate))+'</td>'+
+        '<td class="r">'+total+' <span class="ps">of '+num(s.qty)+'</span>'+
+        (total>num(s.qty)?'<div class="neg" style="font-size:11px">over contract qty</div>':'')+'</td>'+
+        '<td><button class="x" data-act="mvdel" data-id="'+mv.id+'">✕</button></td></tr>'; });
+    h+='<tr class="tot"><td colspan="5">Measured this week</td><td class="r">'+money(earned)+'</td><td colspan="2"></td></tr></tbody></table></div>';
+  }
+  h+='</div><div class="panel"><div class="ph"><div><div class="pt">Crew hours</div>'+
+    '<div class="ps">Days or hours under each day</div></div>'+
+    '<button class="btn hi" data-act="fillcrew">+ Add the crew</button></div>';
+  if(!es.length) h+='<div class="empty">No one on site this week yet.</div>';
+  else{
+    h+='<div class="scroll"><table><thead><tr><th>Worker</th>'+
+      DAYS.map(d=>'<th style="text-align:center">'+d+'</th>').join("")+
+      '<th class="r">Units</th><th class="r">Cost</th><th></th></tr></thead><tbody>';
+    es.forEach(e=>{ const c=byId(D.crew,e.crew_id)||{name:"?"};
+      const fixed=e.override_amount!=null&&e.override_amount!=="";
+      h+='<tr><td><div style="font-weight:600">'+esc(c.name)+'</div><div class="ps">'+
+        esc(c.basis||"")+' · '+(num(c.rate)?money(c.rate):"no rate")+'</div></td>'+
+        [0,1,2,3,4,5,6].map(i=>'<td style="text-align:center;padding:5px 2px"><input class="day" inputmode="decimal" placeholder="–" value="'+
+          esc(e["d"+i]==null?"":e["d"+i])+'" data-act="day" data-id="'+e.id+'" data-i="'+i+'"></td>').join("")+
+        '<td class="r">'+(sheetUnits(e)||"–")+'</td>'+
+        '<td class="r">'+(fixed?'<input class="in qty" inputmode="decimal" value="'+esc(e.override_amount)+'" data-act="ovr" data-id="'+e.id+'">':
+          '<span style="font-weight:600">'+money(sheetCost(e))+'</span>')+'</td>'+
+        '<td><button class="x" data-act="shdel" data-id="'+e.id+'">✕</button></td></tr>'; });
+    h+='<tr class="tot"><td colspan="8">Week crew cost</td><td class="r">'+money(labour)+'</td><td></td></tr></tbody></table></div>';
+  }
+  h+='<div style="padding:12px;border-top:1px solid var(--line);display:flex;gap:7px;flex-wrap:wrap;align-items:center">'+
+    '<span class="ps">Add one:</span>'+D.crew.filter(c=>c.active).map(c=>
+    '<button class="btn q sm" data-act="addone" data-id="'+c.id+'">+ '+esc(c.name)+'</button>').join("")+'</div></div>';
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Supply and plant this week</div>'+
+    '<div class="ps">Invoices, materials, machine hire, freight</div></div>'+
+    '<button class="btn" data-act="costadd">+ Add a cost</button></div>';
+  if(!cs.length) h+='<div class="empty">Nothing booked against this week.</div>';
+  else{
+    h+='<div class="scroll"><table><thead><tr><th>Supplier</th><th>What for</th><th>Category</th><th>Status</th>'+
+      '<th class="r">Amount</th><th></th></tr></thead><tbody>';
+    cs.forEach(c=>h+='<tr><td style="font-weight:600">'+esc(c.supplier)+'</td><td>'+esc(c.description)+'</td>'+
+      '<td><span class="chip">'+esc(c.category)+'</span></td><td><span class="chip">'+esc(c.status)+'</span></td>'+
+      '<td class="r" style="font-weight:600">'+money(num(c.amount),2)+'</td>'+
+      '<td style="white-space:nowrap"><button class="x" data-act="costedit" data-id="'+c.id+'">✎</button>'+
+      '<button class="x" data-act="costdel" data-id="'+c.id+'">✕</button></td></tr>');
+    h+='<tr class="tot"><td colspan="4">Week supply cost</td><td class="r">'+money(supply,2)+'</td><td></td></tr></tbody></table></div>';
+  }
+  return h+'</div>';
+}
+
+function viewPlan(){
+  const rows=D.plans.filter(p=>p.week_start===planWeek);
+  const val=rows.reduce((a,p)=>{const s=byId(D.scope,p.scope_item_id);return a+(s?num(p.qty)*num(s.rate):0);},0);
+  const dw=k=>D.moves.filter(m=>m.week_start===planWeek&&m.scope_item_id===k).reduce((a,m)=>a+num(m.qty),0);
+  let h='<div class="panel"><div class="ph">'+
+    '<div style="display:flex;align-items:center;gap:8px">'+
+    '<button class="x" data-act="plwk" data-d="-7">‹</button>'+
+    '<div><div class="pt">Planning '+fmtWeek(planWeek)+'</div>'+
+    '<div class="ps">What you intend to get done and what it is worth</div></div>'+
+    '<button class="x" data-act="plwk" data-d="7">›</button></div>'+
+    '<div style="display:flex;gap:9px;align-items:center"><div style="text-align:right">'+
+    '<div style="font-size:20px;font-weight:700">'+money(val)+'</div><div class="ps">'+rows.length+' lines planned</div></div>'+
+    '<button class="btn hi" data-act="planpick">+ Add line</button></div></div>';
+  if(!rows.length) h+='<div class="empty">Nothing planned for this week yet.</div>';
+  else{
+    h+='<div class="scroll"><table><thead><tr><th>ID</th><th style="min-width:200px">Scope</th>'+
+      '<th class="r">Planned</th><th class="r">Value</th><th class="r">Actually done</th>'+
+      '<th class="r">Difference</th><th class="r">Left on contract</th><th></th></tr></thead><tbody>';
+    rows.forEach(p=>{ const s=byId(D.scope,p.scope_item_id); if(!s) return;
+      const a=dw(s.id),diff=Math.round((a-num(p.qty))*1000)/1000,left=Math.round((num(s.qty)-doneOf(s.id))*1000)/1000;
+      h+='<tr><td style="font-weight:600">'+esc(s.label||s.code)+'</td>'+
+        '<td style="max-width:320px"><div class="clamp">'+esc(s.description)+'</div></td>'+
+        '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(p.qty)+'" data-act="plq" data-id="'+p.id+'"></td>'+
+        '<td class="r" style="font-weight:600">'+money(num(p.qty)*num(s.rate))+'</td>'+
+        '<td class="r">'+(a||"–")+'</td><td class="r '+(diff<0?"neg":diff>0?"pos":"")+'">'+(a?(diff>0?"+":"")+diff:"–")+'</td>'+
+        '<td class="r '+(num(p.qty)>left?"neg":"")+'">'+left+'</td>'+
+        '<td><button class="x" data-act="pldel" data-id="'+p.id+'">✕</button></td></tr>'; });
+    h+='<tr class="tot"><td colspan="3">Planned</td><td class="r">'+money(val)+'</td><td colspan="4"></td></tr></tbody></table></div>';
+  }
+  return h+'</div>';
+}
+
+function viewMoney(m){
+  const weeks=Object.keys(m.byWeek).sort(); let run=0;
+  let T={earned:0,labour:0,subbie:0,materials:0,plant:0,other:0,cost:0,profit:0};
+  let h='<div class="band">'+
+    cell("Contract value",money(m.contract),"Original scope, ex GST")+
+    cell("Current job value",money(m.value),"Contract + approved variations + PC")+
+    cell("Work measured",money(m.measured),m.value?pctf(m.measured/m.value)+" of the job":"")+
+    cell("Cost so far",money(m.actual),money(m.labour+m.subbie)+" crew · "+money(m.supply)+" supply")+
+    cell("Profit",money(m.profit),pctf(m.margin)+" margin on approved work",m.profit>=0?"pos":"neg")+
+    (m.pendDone>0?cell("Awaiting approval",money(m.pendDone),
+      "Would take profit to "+money(m.profitAll)+" · "+pctf(m.marginAll),"neg"):"")+
+    '</div><div class="panel"><div class="ph"><div class="pt">Weekly profit and loss</div>'+
+    '<div class="ps">Measured against what that week cost</div></div><div class="scroll"><table>'+
+    '<thead><tr><th>Week</th><th class="r">Measured</th><th class="r">Crew</th><th class="r">Subbies</th>'+
+    '<th class="r">Materials</th><th class="r">Plant</th><th class="r">Other</th><th class="r">Cost</th>'+
+    '<th class="r">Profit</th><th class="r">Margin</th><th class="r">Running</th></tr></thead><tbody>';
+  weeks.forEach(w=>{const v=m.byWeek[w];
+    const cost=v.labour+v.subbie+v.materials+v.plant+v.other,p=v.earned-cost; run+=p;
+    ["earned","labour","subbie","materials","plant","other"].forEach(k=>T[k]+=v[k]); T.cost+=cost; T.profit+=p;
+    h+='<tr><td style="white-space:nowrap">'+fmtWeek(w)+'</td><td class="r">'+money(v.earned)+'</td>'+
+      '<td class="r">'+(v.labour?money(v.labour):"–")+'</td><td class="r">'+(v.subbie?money(v.subbie):"–")+'</td>'+
+      '<td class="r">'+(v.materials?money(v.materials):"–")+'</td><td class="r">'+(v.plant?money(v.plant):"–")+'</td>'+
+      '<td class="r">'+(v.other?money(v.other):"–")+'</td><td class="r">'+money(cost)+'</td>'+
+      '<td class="r '+(p>=0?"pos":"neg")+'" style="font-weight:600">'+money(p)+'</td>'+
+      '<td class="r">'+(v.earned?pctf(p/v.earned):"–")+'</td><td class="r '+(run>=0?"":"neg")+'">'+money(run)+'</td></tr>';});
+  return h+'<tr class="tot"><td>Job to date</td><td class="r">'+money(T.earned)+'</td><td class="r">'+money(T.labour)+'</td>'+
+    '<td class="r">'+money(T.subbie)+'</td><td class="r">'+money(T.materials)+'</td><td class="r">'+money(T.plant)+'</td>'+
+    '<td class="r">'+money(T.other)+'</td><td class="r">'+money(T.cost)+'</td>'+
+    '<td class="r '+(T.profit>=0?"pos":"neg")+'">'+money(T.profit)+'</td>'+
+    '<td class="r">'+(T.earned?pctf(T.profit/T.earned):"–")+'</td><td></td></tr></tbody></table></div></div>';
+}
+
+function viewProgress(m){
+  const items=D.scope.filter(s=>pgQ===""||((s.description+" "+s.code).toLowerCase().indexOf(pgQ.toLowerCase())>=0));
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Scope progress</div>'+
+    '<div class="ps">'+items.length+' of '+D.scope.length+' lines</div></div>'+
+    '<div style="display:flex;gap:7px"><input class="in" style="width:200px" placeholder="Search the scope" value="'+esc(pgQ)+'" data-act="pgq">'+
+    '<button class="btn hi" data-act="scopeadd">+ Add scope line</button></div></div>'+
+    '<div class="scroll"><table><thead><tr><th>ID</th><th style="min-width:220px">Scope</th><th class="r">Rate</th>'+
+    '<th class="r">Opening</th><th class="r">Added</th><th class="r">Total</th><th class="r">Of</th>'+
+    '<th>Progress</th><th class="r">Measured</th></tr></thead><tbody>';
+  items.forEach(s=>{
+    let added=0; D.moves.forEach(mv=>{ if(mv.scope_item_id===s.id) added+=num(mv.qty); });
+    const total=doneOf(s.id),p=num(s.qty)?Math.min(total/num(s.qty),1):0;
+    h+='<tr><td><div style="font-weight:600">'+esc(s.label||s.code)+'</div><div class="ps">'+
+      esc(s.kind==="Variation"?(s.variation_no||"Variation"):s.kind)+'</div></td>'+
+      '<td style="max-width:340px"><div class="clamp">'+esc(s.description)+'</div></td>'+
+      '<td class="r">'+money(num(s.rate),2)+'</td>'+
+      '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(s.opening_qty)+'" data-act="open" data-id="'+s.id+'"></td>'+
+      '<td class="r">'+(Math.round(added*100)/100||"–")+'</td><td class="r" style="font-weight:600">'+(total||"–")+'</td>'+
+      '<td class="r">'+num(s.qty)+' '+esc(s.unit||"")+'</td>'+
+      '<td><div class="bar"><i style="width:'+(p*100)+'%"></i></div></td>'+
+      '<td class="r" style="font-weight:600">'+money(total*num(s.rate))+'</td></tr>'; });
+  return h+'<tr class="tot"><td colspan="8">Measured across the job</td><td class="r">'+money(m.measured)+'</td></tr></tbody></table></div></div>';
+}
+
+function daysTo(d){ if(!d) return null;
+  const p=String(d).split("-").map(Number);
+  return Math.round((new Date(p[0],p[1]-1,p[2]) - new Date().setHours(0,0,0,0))/86400000); }
+function dueCell(c){
+  if(c.status==="Paid") return '<span class="ps">paid</span>';
+  if(!c.due_date) return '<span class="ps">–</span>';
+  const n=daysTo(c.due_date);
+  const cls = n<0 ? "neg" : n<=7 ? "neg" : "";
+  const word = n<0 ? Math.abs(n)+"d overdue" : n===0 ? "today" : "in "+n+"d";
+  return '<span class="'+cls+'" style="font-weight:'+(n<=7?600:400)+'">'+fmtDay(c.due_date)+
+    '</span><div class="ps '+cls+'">'+word+'</div>';
+}
+function viewCosts(m){
+  const list=D.costs.filter(c=>(costCat==="All"||c.category===costCat)&&
+    (costQ===""||((c.supplier+" "+c.description).toLowerCase().indexOf(costQ.toLowerCase())>=0)));
+  const total=list.reduce((a,c)=>a+num(c.amount),0);
+  const owing=D.costs.reduce((a,c)=>a+(c.status==="Paid"?0:num(c.amount)-num(c.paid)),0);
+  const unc=D.costs.filter(c=>c.status==="To Confirm"||c.status==="Awaiting Invoice");
+  let h='<div class="band">'+
+    cell("Supply and plant",money(m.supply),"Everything except crew")+
+    cell("Crew",money(m.labour+m.subbie),"From the timesheets")+
+    cell("Still owing",money(owing),"Not marked paid")+
+    cell("Not confirmed",money(unc.reduce((a,c)=>a+num(c.amount),0)),unc.length+" to chase")+
+    (function(){
+      const open=D.costs.filter(c=>c.status!=="Paid"&&c.due_date);
+      const late=open.filter(c=>daysTo(c.due_date)<0);
+      const soon=open.filter(c=>{const n=daysTo(c.due_date);return n>=0&&n<=7;});
+      const lateAmt=late.reduce((a,c)=>a+num(c.amount)-num(c.paid),0);
+      const soonAmt=soon.reduce((a,c)=>a+num(c.amount)-num(c.paid),0);
+      return cell("Overdue",money(lateAmt),late.length+" invoice"+(late.length===1?"":"s"),late.length?"neg":"")+
+             cell("Due within 7 days",money(soonAmt),soon.length+" invoice"+(soon.length===1?"":"s"),soon.length?"neg":"");
+    })()+
+    '</div><div class="panel"><div class="ph"><div><div class="pt">Cost log</div>'+
+    '<div class="ps">'+list.length+' entries, ex GST</div></div><div style="display:flex;gap:7px;flex-wrap:wrap">'+
+    '<input class="in" style="width:170px" placeholder="Search supplier" value="'+esc(costQ)+'" data-act="costq">'+
+    '<select class="in" style="width:auto" data-act="costcat"><option>All</option>'+
+    CATS.map(c=>'<option'+(costCat===c?" selected":"")+'>'+esc(c)+'</option>').join("")+'</select>'+
+    '<button class="btn" data-act="costadd">+ Add a cost</button></div></div><div class="scroll"><table>'+
+    '<thead><tr><th>Date</th><th>Supplier</th><th>What for</th><th>Category</th><th>Status</th>'+
+    '<th>Due</th><th class="r">Amount</th><th class="r">Owing</th><th></th></tr></thead><tbody>';
+  list.forEach(c=>h+='<tr><td style="white-space:nowrap">'+fmtDay(c.cost_date)+'</td>'+
+    '<td style="font-weight:600">'+esc(c.supplier)+'</td><td style="max-width:260px"><div class="clamp">'+esc(c.description)+'</div></td>'+
+    '<td><span class="chip">'+esc(c.category)+'</span></td>'+
+    '<td><select class="in" style="padding:4px 6px;font-size:12.5px" data-act="cstatus" data-id="'+c.id+'">'+
+    PAYS.map(s=>'<option'+(c.status===s?" selected":"")+'>'+esc(s)+'</option>').join("")+'</select></td>'+
+    (caps.costDue?'<td style="white-space:nowrap">'+dueCell(c)+'</td>':'<td></td>')+
+    '<td class="r" style="font-weight:600">'+money(num(c.amount),2)+'</td>'+
+    '<td class="r">'+(c.status==="Paid"?"–":money(num(c.amount)-num(c.paid),2))+'</td>'+
+    '<td style="white-space:nowrap"><button class="x" data-act="costedit" data-id="'+c.id+'">✎</button>'+
+    '<button class="x" data-act="costdel" data-id="'+c.id+'">✕</button></td></tr>');
+  return h+'<tr class="tot"><td colspan="5">Total shown</td><td class="r">'+money(total,2)+'</td><td colspan="2"></td></tr></tbody></table></div></div>';
+}
+
+function viewClaims(m){
+  const day=num(job.claim_day)||25,now=new Date(); now.setHours(0,0,0,0);
+  let dd=new Date(now.getFullYear(),now.getMonth(),day); if(dd<now) dd.setMonth(dd.getMonth()+1);
+  const dueIn=Math.round((dd-now)/86400000);
+  const no="PC-"+String(D.claims.length+1).padStart(2,"0");
+  if(claimTo===null) claimTo=isoOf(dd);
+  const rows=D.scope.filter(claimable).map(s=>{
+    const done=doneOf(s.id),already=m.claimedBy[s.id]||0;
+    const sug=Math.max(Math.round((done-already)*1000)/1000,0);
+    const qty=claimAdj[s.id]===undefined?sug:num(claimAdj[s.id]);
+    return {s:s,done:done,already:already,sug:sug,qty:qty,value:qty*num(s.rate)};
+  }).filter(r=>r.sug>0||r.qty>0);
+  const total=rows.reduce((a,r)=>a+r.value,0);
+  let h='<div class="band">'+
+    cell("Claimed to date",money(m.claimed),D.claims.length+" claims")+
+    cell("Received",money(m.received),"In the bank","pos")+
+    cell("Owed to you",money(m.owed),"Raised but not paid",m.owed>0?"neg":"")+
+    cell("Ready to claim",money(m.ready),no+" due "+dd.toLocaleDateString("en-AU",{day:"numeric",month:"short"}))+
+    '</div><div class="panel"><div class="ph"><div><div class="pt">Claim '+no+' — ready to raise</div>'+
+    '<div class="ps">Everything measured since your last claim'+(dueIn<=31?", due in "+dueIn+" days":"")+'</div></div>'+
+    '<div style="display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap">'+
+    '<div><span class="lab">Claim up to</span><input class="in" type="date" style="width:150px" value="'+claimTo+'" data-act="claimto"></div>'+
+    '<div style="text-align:right"><div style="font-size:20px;font-weight:700">'+money(total,2)+'</div>'+
+    '<div class="ps">'+rows.filter(r=>r.qty>0).length+' lines</div></div>'+
+    '<button class="btn hi" data-act="raise"'+(total<=0?" disabled":"")+'>Raise '+no+'</button></div></div>';
+  const risky=rows.filter(r=>{ const mv=measuredFor(r.s.id);
+    return mv>0 && (r.already+r.qty) > mv+0.001; });
+  if(risky.length) h+='<div class="note" style="border-color:#F0C4B8;background:#FDF1EE"><div>'+
+    '<strong>'+risky.length+' line'+(risky.length===1?"":"s")+' would be claimed past what you have measured.</strong> '+
+    risky.map(r=>esc(r.s.label||r.s.code)+" ("+(r.already+r.qty).toFixed(1)+" against "+
+      measuredFor(r.s.id).toFixed(1)+" measured)").join(", ")+
+    '. Check the Measure tab before you raise this claim.</div></div>';
+  if(!rows.length) h+='<div class="empty">Nothing new to claim.</div>';
+  else{
+    h+='<div class="scroll"><table><thead><tr><th>ID</th><th style="min-width:200px">Scope</th>'+
+      '<th class="r">Claimed before</th><th class="r">Measured now</th><th class="r">This claim</th>'+
+      '<th class="r">Rate</th><th class="r">Value</th></tr></thead><tbody>';
+    rows.forEach(r=>h+='<tr><td style="font-weight:600">'+esc(r.s.label||r.s.code)+'</td>'+
+      '<td style="max-width:320px"><div class="clamp">'+esc(r.s.description)+'</div></td>'+
+      '<td class="r">'+(r.already||"–")+'</td><td class="r">'+r.done+'</td>'+
+      '<td class="r"><input class="in qty" inputmode="decimal" value="'+(claimAdj[r.s.id]===undefined?r.sug:esc(claimAdj[r.s.id]))+'" data-act="cadj" data-id="'+r.s.id+'"></td>'+
+      '<td class="r">'+money(num(r.s.rate),2)+'</td><td class="r" style="font-weight:600">'+money(r.value,2)+'</td></tr>');
+    h+='<tr class="tot"><td colspan="6">Claim total ex GST</td><td class="r">'+money(total,2)+'</td></tr></tbody></table></div>';
+  }
+  h+='</div><div class="panel"><div class="ph"><div class="pt">Claims raised</div>'+
+    '<div class="ps">Update Received as the money lands</div></div>';
+  if(!D.claims.length) h+='<div class="empty">No claims raised yet.</div>';
+  else{
+    h+='<div class="scroll"><table><thead><tr><th>Claim</th><th>Period</th><th class="r">Claimed</th>'+
+      '<th class="r">Certified</th><th class="r">Received</th><th class="r">Outstanding</th><th>Status</th><th></th></tr></thead><tbody>';
+    D.claims.forEach(c=>h+='<tr><td style="font-weight:600">'+esc(c.no)+'<div class="ps">'+
+      D.lines.filter(l=>l.claim_id===c.id).length+' lines</div></td>'+
+      '<td style="white-space:nowrap">'+(c.period_from?fmtDay(c.period_from)+" – ":"")+fmtDay(c.period_to)+'</td>'+
+      '<td class="r" style="font-weight:600">'+money(claimValue(c),2)+'</td>'+
+      '<td class="r"><input class="in qty" inputmode="decimal" placeholder="same" value="'+esc(c.certified==null?"":c.certified)+'" data-act="cert" data-id="'+c.id+'"></td>'+
+      '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(c.received)+'" data-act="recd" data-id="'+c.id+'"></td>'+
+      '<td class="r '+(claimOut(c)>0?"neg":"pos")+'" style="font-weight:600">'+money(claimOut(c),2)+'</td>'+
+      '<td><select class="in" style="padding:4px 6px;font-size:12.5px" data-act="clstat" data-id="'+c.id+'">'+
+      CSTAT.map(s=>'<option'+(c.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select></td>'+
+      '<td><button class="x" data-act="cldel" data-id="'+c.id+'">✕</button></td></tr>');
+    h+='<tr class="tot"><td colspan="2">Totals</td><td class="r">'+money(m.claimed,2)+'</td><td></td>'+
+      '<td class="r">'+money(m.received,2)+'</td><td class="r">'+money(m.owed,2)+'</td><td colspan="2"></td></tr></tbody></table></div>';
+  }
+  return h+'</div>';
+}
+
+function viewCrew(){
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Crew</div>'+
+    '<div class="ps">Set someone up once and they appear on every week</div></div>'+
+    '<button class="btn hi" data-act="crewadd">+ Add someone</button></div><div class="scroll"><table>'+
+    '<thead><tr><th>Name</th><th>Role</th><th>Paid by</th><th class="r">Rate</th><th>Counts as</th>'+
+    '<th>On the job</th><th class="r">Cost to date</th><th></th></tr></thead><tbody>';
+  D.crew.forEach(c=>{
+    const cost=D.sheets.filter(e=>e.crew_id===c.id).reduce((a,e)=>a+sheetCost(e),0);
+    h+='<tr><td><input class="in" style="font-weight:600" value="'+esc(c.name)+'" data-act="cw" data-f="name" data-id="'+c.id+'"></td>'+
+      '<td><input class="in" style="width:110px" value="'+esc(c.role||"")+'" data-act="cw" data-f="role" data-id="'+c.id+'"></td>'+
+      '<td><select class="in" data-act="cw" data-f="basis" data-id="'+c.id+'">'+
+      ["Daily","Hourly"].map(b=>'<option'+(c.basis===b?" selected":"")+'>'+b+'</option>').join("")+'</select></td>'+
+      '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(c.rate)+'" data-act="cw" data-f="rate" data-id="'+c.id+'"></td>'+
+      '<td><select class="in" data-act="cw" data-f="category" data-id="'+c.id+'">'+
+      ["Labour","Subcontractor"].map(b=>'<option'+(c.category===b?" selected":"")+'>'+b+'</option>').join("")+'</select></td>'+
+      '<td><button class="btn q sm" data-act="cwactive" data-id="'+c.id+'">'+(c.active?"Working":"Off the job")+'</button></td>'+
+      '<td class="r" style="font-weight:600">'+money(cost)+'</td>'+
+      '<td><button class="x" data-act="cwdel" data-id="'+c.id+'">✕</button></td></tr>'; });
+  return h+'</tbody></table></div></div>';
+}
+
+
+/* ---------------- clients ---------------- */
+function viewClients(){
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Clients</div>'+
+    '<div class="ps">'+D.clients.length+' on the books</div></div>'+
+    '<button class="btn hi" data-act="clientadd">+ Add a client</button></div><div class="scroll"><table>'+
+    '<thead><tr><th>Client</th><th>Contact</th><th>Phone</th><th>Email</th><th>Address</th>'+
+    '<th class="r">Leads</th><th class="r">Quotes</th><th></th></tr></thead><tbody>';
+  if(!D.clients.length) return h+'</tbody></table></div><div class="empty">No clients yet.</div></div>';
+  D.clients.forEach(c=>{
+    h+='<tr><td><input class="in" style="font-weight:600" value="'+esc(c.name)+'" data-act="cl" data-f="name" data-id="'+c.id+'"></td>'+
+      '<td><input class="in" style="width:120px" value="'+esc(c.contact||"")+'" data-act="cl" data-f="contact" data-id="'+c.id+'"></td>'+
+      '<td><input class="in" style="width:120px" value="'+esc(c.phone||"")+'" data-act="cl" data-f="phone" data-id="'+c.id+'"></td>'+
+      '<td><input class="in" style="width:180px" value="'+esc(c.email||"")+'" data-act="cl" data-f="email" data-id="'+c.id+'"></td>'+
+      '<td><input class="in" style="width:200px" value="'+esc(c.address||"")+'" data-act="cl" data-f="address" data-id="'+c.id+'"></td>'+
+      '<td class="r">'+D.leads.filter(l=>l.client_id===c.id).length+'</td>'+
+      '<td class="r">'+D.ests.filter(e=>e.client_id===c.id).length+'</td>'+
+      '<td><button class="x" data-act="cldel2" data-id="'+c.id+'">✕</button></td></tr>';
+  });
+  return h+'</tbody></table></div></div>';
+}
+
+/* ---------------- leads ---------------- */
+function viewLeads(){
+  const by={}; LSTAT.forEach(s=>by[s]={n:0,v:0});
+  D.leads.forEach(l=>{ if(by[l.status]){ by[l.status].n++; by[l.status].v+=num(l.est_value); } });
+  const decided=by.Won.n+by.Lost.n;
+  const list=D.leads.filter(l=>leadFilter==="All"||l.status===leadFilter);
+  const open=D.leads.filter(l=>["New","Quoting","Quoted"].indexOf(l.status)>=0);
+  let h='<div class="band">'+
+    cell("Live pipeline",money(open.reduce((a,l)=>a+num(l.est_value),0)),open.length+" still in play")+
+    cell("Won",money(by.Won.v),by.Won.n+" jobs","pos")+
+    cell("Lost",money(by.Lost.v),by.Lost.n+" jobs",by.Lost.n?"neg":"")+
+    cell("Win rate",decided?Math.round(by.Won.n/decided*100)+"%":"–","of decided leads")+
+    '</div><div class="panel"><div class="ph"><div><div class="pt">Leads</div>'+
+    '<div class="ps">'+list.length+' shown</div></div><div style="display:flex;gap:7px;flex-wrap:wrap">'+
+    '<select class="in" style="width:auto" data-act="leadfilter"><option>All</option>'+
+    LSTAT.map(s=>'<option'+(leadFilter===s?" selected":"")+'>'+s+'</option>').join("")+'</select>'+
+    '<button class="btn hi" data-act="leadadd">+ Add a lead</button></div></div>';
+  if(!list.length) return h+'<div class="empty">Nothing here yet.</div></div>';
+  h+='<div class="scroll"><table><thead><tr><th style="min-width:180px">Job</th><th>Client</th>'+
+    '<th>Where from</th><th class="r">Worth</th><th>Status</th><th>Next action</th><th>Notes</th><th></th></tr></thead><tbody>';
+  list.forEach(l=>{
+    h+='<tr><td><input class="in" style="font-weight:600" value="'+esc(l.title)+'" data-act="ld" data-f="title" data-id="'+l.id+'"></td>'+
+      '<td><select class="in" style="width:150px" data-act="ld" data-f="client_id" data-id="'+l.id+'">'+
+      '<option value="">—</option>'+D.clients.map(c=>'<option value="'+c.id+'"'+(l.client_id===c.id?" selected":"")+'>'+esc(c.name)+'</option>').join("")+'</select></td>'+
+      '<td><input class="in" style="width:120px" value="'+esc(l.source||"")+'" data-act="ld" data-f="source" data-id="'+l.id+'"></td>'+
+      '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(l.est_value)+'" data-act="ld" data-f="est_value" data-id="'+l.id+'"></td>'+
+      '<td><select class="in" style="width:110px" data-act="ld" data-f="status" data-id="'+l.id+'">'+
+      LSTAT.map(s=>'<option'+(l.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select></td>'+
+      '<td><input class="in" type="date" style="width:150px" value="'+esc(l.next_action_at||"")+'" data-act="ld" data-f="next_action_at" data-id="'+l.id+'"></td>'+
+      '<td><input class="in" style="width:200px" value="'+esc(l.notes||"")+'" data-act="ld" data-f="notes" data-id="'+l.id+'"></td>'+
+      '<td style="white-space:nowrap"><button class="btn q sm" data-act="leadquote" data-id="'+l.id+'">Quote</button>'+
+      '<button class="x" data-act="leaddel" data-id="'+l.id+'">✕</button></td></tr>';
+  });
+  return h+'</tbody></table></div></div>';
+}
+
+/* ---------------- quotes ---------------- */
+function estTotals(e){
+  const secs=D.secs.filter(s=>s.estimate_id===e.id);
+  let sell=0,cost=0;
+  secs.forEach(s=>D.items.filter(i=>i.section_id===s.id).forEach(i=>{
+    const r=num(i.cost_each)*(1+num(i.margin_pct)/100);
+    sell+=num(i.qty)*r; cost+=num(i.qty)*num(i.cost_each);
+  }));
+  const allow=D.allow.filter(a=>a.estimate_id===e.id).reduce((a,x)=>a+num(x.amount),0);
+  const sub=sell+allow, gst=sub*num(e.gst_rate||0.1);
+  return {sell:sell,cost:cost,allow:allow,sub:sub,gst:gst,total:sub+gst,
+    margin:sell?(sell-cost)/sell:0,profit:sell-cost};
+}
+function viewQuotes(){
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Quotes</div>'+
+    '<div class="ps">'+D.ests.length+' estimates</div></div>'+
+    '<button class="btn hi" data-act="estadd">+ New quote</button></div>';
+  if(!D.ests.length) return h+'<div class="empty">No quotes yet.</div></div>';
+  h+='<div class="scroll"><table><thead><tr><th>Number</th><th>Title</th><th>Client</th><th>Issued</th>'+
+    '<th class="r">Ex GST</th><th class="r">Total</th><th class="r">Margin</th><th>Status</th><th></th></tr></thead><tbody>';
+  D.ests.forEach(e=>{
+    const T=estTotals(e), c=byId(D.clients,e.client_id);
+    h+='<tr><td style="font-weight:600">'+esc(e.number)+'</td>'+
+      '<td><button class="btn q sm" data-act="estopen" data-id="'+e.id+'">'+esc(e.title||"Untitled")+'</button></td>'+
+      '<td>'+esc(c?c.name:"—")+'</td><td style="white-space:nowrap">'+fmtDay(e.issue_date)+'</td>'+
+      '<td class="r">'+money(T.sub,2)+'</td><td class="r" style="font-weight:600">'+money(T.total,2)+'</td>'+
+      '<td class="r '+(T.margin>=0.2?"pos":T.margin<0.1?"neg":"")+'">'+pctf(T.margin)+'</td>'+
+      '<td><select class="in" style="padding:4px 6px;font-size:12.5px" data-act="eststat" data-id="'+e.id+'">'+
+      ESTAT.map(s=>'<option'+(e.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select></td>'+
+      '<td><button class="x" data-act="estdel" data-id="'+e.id+'">✕</button></td></tr>';
+  });
+  return h+'</tbody></table></div></div>';
+}
+
+function viewEstimate(){
+  const e=byId(D.ests,estId); if(!e){ estId=null; return viewQuotes(); }
+  const T=estTotals(e), secs=D.secs.filter(s=>s.estimate_id===e.id);
+  let h='<div class="panel"><div class="ph"><div>'+
+    '<button class="btn q sm" data-act="estback">‹ All quotes</button>'+
+    '<div class="pt" style="margin-top:6px">'+esc(e.number)+' — '+esc(e.title||"Untitled")+'</div></div>'+
+    '<div style="display:flex;gap:7px;flex-wrap:wrap">'+
+    '<button class="btn q" data-act="estdup" data-id="'+e.id+'">Duplicate</button>'+
+    (e.job_id?'<span class="chip">job created</span>'
+      :'<button class="btn q" data-act="est2job" data-id="'+e.id+'">Turn into a job</button>')+
+    '<button class="btn q" data-act="estprint">Preview and print</button></div></div>'+
+    '<div class="band" style="border:0">'+
+    cell("Quoted ex GST",money(T.sub,2),money(T.allow,2)+" of that is allowances")+
+    cell("Your cost",money(T.cost,2),"What it should cost to build")+
+    cell("Margin",money(T.profit,2),pctf(T.margin)+" on quoted work",T.margin>=0.2?"pos":T.margin<0.1?"neg":"")+
+    cell("Total inc GST",money(T.total,2),"GST "+money(T.gst,2))+
+    '</div><div style="padding:14px"><div class="grid2">'+
+    fld("Quote number",'<input class="in" value="'+esc(e.number||"")+'" data-act="es" data-f="number" data-id="'+e.id+'">')+
+    fld("Title",'<input class="in" value="'+esc(e.title||"")+'" data-act="es" data-f="title" data-id="'+e.id+'">')+
+    fld("Client",'<div style="display:flex;gap:7px">'+
+      '<select class="in" data-act="es" data-f="client_id" data-id="'+e.id+'"><option value="">—</option>'+
+      D.clients.map(c=>'<option value="'+c.id+'"'+(e.client_id===c.id?" selected":"")+'>'+esc(c.name)+'</option>').join("")+
+      '</select><button class="btn q sm" style="white-space:nowrap" data-act="newclient" data-id="'+e.id+'">+ New</button></div>')+
+    fld("Site address",'<input class="in" value="'+esc(e.site_address||"")+'" data-act="es" data-f="site_address" data-id="'+e.id+'">')+
+    fld("Issued",'<input class="in" type="date" value="'+esc(e.issue_date||"")+'" data-act="es" data-f="issue_date" data-id="'+e.id+'">')+
+    fld("Default margin %",'<input class="in" inputmode="decimal" value="'+esc(e.default_margin==null?20:e.default_margin)+'" data-act="es" data-f="default_margin" data-id="'+e.id+'">')+
+    fld("Valid for (days)",'<input class="in" inputmode="numeric" value="'+esc(e.valid_days)+'" data-act="es" data-f="valid_days" data-id="'+e.id+'">')+
+    fld("Status",'<select class="in" data-act="es" data-f="status" data-id="'+e.id+'">'+
+      ESTAT.map(s=>'<option'+(e.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select>')+
+    fld("What the client sees on each line",'<select class="in" data-act="es" data-f="show_rates" data-id="'+e.id+'">'+
+      '<option value="true"'+(e.show_rates?" selected":"")+'>Unit, quantity, rate and amount</option>'+
+      '<option value="false"'+(e.show_rates?"":" selected")+'>Description and amount only</option></select>')+
+    '</div></div></div>';
+
+  const cl=byId(D.clients,e.client_id);
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Client details</div>'+
+    '<div class="ps">'+(cl?"These print on the quote. Edit them here or on the Clients tab."
+      :"No client on this quote yet")+'</div></div>'+
+    (cl?'':'<button class="btn hi" data-act="newclient" data-id="'+e.id+'">+ Add the client</button>')+
+    '</div>';
+  if(cl){
+    h+='<div style="padding:14px"><div class="grid2">'+
+      fld("Client or company",'<input class="in" value="'+esc(cl.name||"")+'" data-act="cl" data-f="name" data-id="'+cl.id+'">')+
+      fld("Contact person",'<input class="in" value="'+esc(cl.contact||"")+'" data-act="cl" data-f="contact" data-id="'+cl.id+'">')+
+      fld("Phone",'<input class="in" value="'+esc(cl.phone||"")+'" data-act="cl" data-f="phone" data-id="'+cl.id+'">')+
+      fld("Email",'<input class="in" value="'+esc(cl.email||"")+'" data-act="cl" data-f="email" data-id="'+cl.id+'">')+
+      '</div>'+
+      fld("Address",'<input class="in" value="'+esc(cl.address||"")+'" data-act="cl" data-f="address" data-id="'+cl.id+'">')+
+      fld("ABN",'<input class="in" style="max-width:220px" value="'+esc(cl.abn||"")+'" data-act="cl" data-f="abn" data-id="'+cl.id+'">')+
+      '</div>';
+  }
+  h+='</div>';
+
+  secs.forEach(s=>{
+    const its=D.items.filter(i=>i.section_id===s.id);
+    const st=its.reduce((a,i)=>a+num(i.qty)*num(i.cost_each)*(1+num(i.margin_pct)/100),0);
+    h+='<div class="panel"><div class="ph">'+
+      '<input class="in" style="font-weight:600;max-width:340px" value="'+esc(s.name)+'" data-act="sec" data-id="'+s.id+'">'+
+      '<div style="display:flex;gap:7px;align-items:center"><span style="font-weight:700">'+money(st,2)+'</span>'+
+      '<button class="btn q sm" data-act="ppick" data-id="'+s.id+'">+ From price list</button>'+
+      '<button class="btn q sm" data-act="itemadd" data-id="'+s.id+'">+ Blank line</button>'+
+      '<button class="x" data-act="secdel" data-id="'+s.id+'">✕</button></div></div>';
+    if(!its.length) h+='<div class="empty">No lines in this section yet.</div>';
+    else{
+      h+='<div class="scroll"><table><thead><tr><th style="min-width:220px">Description</th><th>Unit</th>'+
+        '<th class="r">Qty</th><th class="r">Cost each</th><th class="r">Margin %</th>'+
+        '<th class="r">Sell rate</th><th class="r">Amount</th><th></th></tr></thead><tbody>';
+      its.forEach(i=>{
+        const rate=num(i.cost_each)*(1+num(i.margin_pct)/100);
+        h+='<tr><td><input class="in" value="'+esc(i.description||"")+'" data-act="it" data-f="description" data-id="'+i.id+'"></td>'+
+          '<td><input class="in" style="width:70px" value="'+esc(i.unit||"")+'" data-act="it" data-f="unit" data-id="'+i.id+'"></td>'+
+          '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(i.qty)+'" data-act="it" data-f="qty" data-id="'+i.id+'"></td>'+
+          '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(i.cost_each)+'" data-act="it" data-f="cost_each" data-id="'+i.id+'"></td>'+
+          '<td class="r"><input class="in qty" style="width:70px" inputmode="decimal" value="'+esc(i.margin_pct)+'" data-act="it" data-f="margin_pct" data-id="'+i.id+'"></td>'+
+          '<td class="r">'+money(rate,2)+'</td>'+
+          '<td class="r" style="font-weight:600">'+money(num(i.qty)*rate,2)+'</td>'+
+          '<td><button class="x" data-act="itemdel" data-id="'+i.id+'">✕</button></td></tr>';
+      });
+      h+='</tbody></table></div>';
+    }
+    h+='</div>';
+  });
+  h+='<div style="margin-bottom:12px"><button class="btn q" data-act="secadd">+ Add a section</button></div>';
+
+  const alw=D.allow.filter(a=>a.estimate_id===e.id);
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Allowances and PC sums</div>'+
+    '<div class="ps">Quoted at cost, no margin added</div></div>'+
+    '<button class="btn q sm" data-act="alwadd">+ Allowance</button></div>';
+  if(!alw.length) h+='<div class="empty">None.</div>';
+  else{
+    h+='<table><tbody>';
+    alw.forEach(a=>h+='<tr><td><input class="in" value="'+esc(a.description||"")+'" data-act="al" data-f="description" data-id="'+a.id+'"></td>'+
+      '<td class="r" style="width:140px"><input class="in qty" inputmode="decimal" value="'+esc(a.amount)+'" data-act="al" data-f="amount" data-id="'+a.id+'"></td>'+
+      '<td style="width:40px"><button class="x" data-act="alwdel" data-id="'+a.id+'">✕</button></td></tr>');
+    h+='<tr class="tot"><td>Allowances</td><td class="r">'+money(T.allow,2)+'</td><td></td></tr></tbody></table>';
+  }
+  h+='</div>';
+
+  h+='<div class="panel"><div class="ph"><div class="pt">The words on the quote</div>'+
+    '<div class="ps">These print on the document</div></div><div style="padding:14px">'+
+    fld("Quoted items intro",'<textarea class="in" rows="2" data-act="es" data-f="items_intro" data-id="'+e.id+'">'+esc(e.items_intro||"")+'</textarea>')+
+    fld("Quote summary intro",'<textarea class="in" rows="2" data-act="es" data-f="summary_intro" data-id="'+e.id+'">'+esc(e.summary_intro||"")+'</textarea>')+
+    fld("Covering letter",'<textarea class="in" rows="6" data-act="es" data-f="letter" data-id="'+e.id+'">'+esc(e.letter||"")+'</textarea>')+
+    fld("Specification and inclusions",'<textarea class="in" rows="7" data-act="es" data-f="spec" data-id="'+e.id+'">'+esc(e.spec||"")+'</textarea>')+
+    fld("Terms and conditions",'<textarea class="in" rows="8" data-act="es" data-f="terms" data-id="'+e.id+'">'+esc(e.terms||"")+'</textarea>')+
+    fld("Contact page note",'<textarea class="in" rows="3" data-act="es" data-f="contact_note" data-id="'+e.id+'">'+esc(e.contact_note||"")+'</textarea>')+
+    '</div></div>';
+  return h;
+}
+
+/* ---------------- the printable quote ---------------- */
+function docHtml(){
+  const e=byId(D.ests,estId); if(!e) return "";
+  const T=estTotals(e), c=byId(D.clients,e.client_id), o=D.org||{};
+  const secs=D.secs.filter(s=>s.estimate_id===e.id);
+  const alw=D.allow.filter(a=>a.estimate_id===e.id);
+  const valid=e.issue_date?addDays(e.issue_date,num(e.valid_days)||30):"";
+  const brand=o.brand||"#3D4E60";
+  const cover=e.cover_image||o.cover_image||"";
+  const back=o.back_image||cover;
+  const mark=o.logo?'<img src="'+o.logo+'" alt="'+esc(o.name||"")+'">'
+    :'<div style="font-size:20px;font-weight:700">'+esc(o.name||"")+'</div>';
+  const rates = e.show_rates !== false;   // show the breakdown unless it was deliberately turned off
+
+  let h='<div class="runfoot"><span>'+esc(o.name||"")+(o.licence?' · '+esc(o.licence):"")+
+    '</span><span>'+esc(e.number||"")+'</span></div>'+
+    '<div class="doc" style="--brand:'+esc(brand)+'">';
+
+  /* ---- page 1: cover ---- */
+  h+='<div class="cv"><div class="txt">'+
+    '<div class="lg">'+mark+'</div>'+
+    '<div class="ref">Quotation · '+esc(e.number||"")+'</div>'+
+    '<h1 class="ti">'+esc(e.title||"")+'</h1>'+
+    (e.site_address?'<div class="ad">'+esc(e.site_address)+'</div>':"")+
+    '<div class="brule"></div>'+
+    '<div class="kvs">'+
+    '<span class="k">Prepared for</span><span>'+esc(c?c.name:"—")+
+      (c&&c.contact?'<br>'+esc(c.contact):"")+'</span>'+
+    '<span class="k">Issued</span><span>'+longDate(e.issue_date)+'</span>'+
+    (valid?'<span class="k">Valid until</span><span>'+longDate(valid)+'</span>':"")+
+    '</div>'+
+    '<div class="who">'+[esc(o.name||""),esc(o.address||""),
+      [esc(o.phone||""),esc(o.email||"")].filter(Boolean).join(" · "),
+      esc(o.licence||"")].filter(Boolean).join("<br>")+'</div>'+
+    '</div><div class="shot">'+(cover?'<img src="'+esc(cover)+'" alt="">':"")+'</div></div>';
+
+  /* ---- letter ---- */
+  if(e.letter) h+='<h2>Letter</h2><p>'+esc(e.letter)+'</p>'+
+    '<div class="pg2" style="margin-top:26px">'+
+    '<div class="party"><div class="h">Prepared for</div><div class="meta">'+
+    [esc(c?c.name:"—"),c&&esc(c.contact),c&&esc(c.phone),c&&esc(c.address),c&&esc(c.email)]
+      .filter(Boolean).join("<br>")+'</div></div>'+
+    '<div class="party"><div class="h">Prepared by</div><div class="meta">'+
+    [esc(o.name||""),esc(o.address||""),esc(o.phone||""),esc(o.email||""),esc(o.licence||"")]
+      .filter(Boolean).join("<br>")+'</div></div></div>'+
+    '<div class="brk"></div>';
+
+  /* ---- quoted items ---- */
+  h+='<h2>Quoted items</h2>'+
+    (e.items_intro?'<p class="intro">'+esc(e.items_intro)+'</p>':"");
+  secs.forEach(s=>{
+    const its=D.items.filter(i=>i.section_id===s.id); if(!its.length) return;
+    const st=its.reduce((a,i)=>a+num(i.qty)*num(i.cost_each)*(1+num(i.margin_pct)/100),0);
+    h+='<div class="secbar">'+esc(s.name)+'</div>';
+    if(rates){
+      h+='<table style="margin-bottom:24px"><thead><tr><th style="width:50%">Description</th>'+
+        '<th style="width:9%">Unit</th><th class="r" style="width:10%">Qty</th>'+
+        '<th class="r" style="width:15%">Rate</th><th class="r" style="width:16%">Amount</th></tr></thead><tbody>';
+      its.forEach(i=>{ const r=num(i.cost_each)*(1+num(i.margin_pct)/100);
+        h+='<tr><td>'+esc(i.description||"")+'</td><td>'+esc(i.unit||"item")+'</td>'+
+          '<td class="r">'+num(i.qty)+'</td><td class="r">'+money(r,2)+'</td>'+
+          '<td class="r">'+money(num(i.qty)*r,2)+'</td></tr>'; });
+      h+='<tr class="tot"><td colspan="4">'+esc(s.name)+' total</td><td class="r">'+money(st,2)+'</td></tr>';
+    }else{
+      h+='<table class="simple" style="margin-bottom:24px"><tbody>';
+      its.forEach(i=>{ const r=num(i.cost_each)*(1+num(i.margin_pct)/100);
+        h+='<tr><td>'+esc(i.description||"")+'</td>'+
+          '<td class="amt">'+money(num(i.qty)*r,2)+'</td></tr>'; });
+      h+='<tr class="tot"><td>'+esc(s.name)+' total</td><td class="amt">'+money(st,2)+'</td></tr>';
+    }
+    h+='</tbody></table>';
+  });
+  if(alw.length){
+    h+='<div class="secbar">Allowances and prime cost sums</div>'+
+      '<table class="simple" style="margin-bottom:24px"><tbody>';
+    alw.forEach(a=>h+='<tr><td>'+esc(a.description||"")+'</td><td class="amt">'+
+      money(num(a.amount),2)+'</td></tr>');
+    h+='<tr class="tot"><td>Total allowances</td><td class="amt">'+money(T.allow,2)+'</td></tr></tbody></table>';
+  }
+
+  /* ---- summary ---- */
+  h+='<div class="sumwrap"><h2 style="margin-top:34px">Quote summary</h2>'+
+    (e.summary_intro?'<p class="intro">'+esc(e.summary_intro)+'</p>':"")+'<div class="sumbox">';
+  secs.forEach(s=>{
+    const st=D.items.filter(i=>i.section_id===s.id)
+      .reduce((a,i)=>a+num(i.qty)*num(i.cost_each)*(1+num(i.margin_pct)/100),0);
+    if(st) h+='<div class="sum"><span>'+esc(s.name)+'</span><span>'+money(st,2)+'</span></div>';
+  });
+  if(T.allow) h+='<div class="sum"><span>Allowances and PC sums</span><span>'+money(T.allow,2)+'</span></div>';
+  h+='<div class="sum"><span>Subtotal ex GST</span><span>'+money(T.sub,2)+'</span></div>'+
+    '<div class="sum"><span>GST</span><span>'+money(T.gst,2)+'</span></div>'+
+    '<div class="sum big"><span>Total inc GST</span><span>'+money(T.total,2)+'</span></div></div>'+
+    '<p style="margin-top:20px;font-size:9.5pt;color:#666">This quotation is valid until '+
+    (valid?longDate(valid):"the date shown")+'. All prices in Australian dollars.</p>'+
+    '<div class="pg2" style="margin-top:44px">'+
+    '<div><div style="border-bottom:1px solid var(--ink);height:44px"></div>'+
+    '<div class="meta" style="margin-top:6px">Client signature</div></div>'+
+    '<div><div style="border-bottom:1px solid var(--ink);height:44px"></div>'+
+    '<div class="meta" style="margin-top:6px">Date</div></div></div></div>';
+
+  /* ---- specification ---- */
+  if(e.spec) h+='<div class="brk"></div><div class="specban"><h2 style="border:0;margin:0;padding:0;'+
+    'font-size:23px;text-transform:none;letter-spacing:-.01em;font-weight:400">'+
+    'Specifications &amp; Inclusions</h2></div><div class="specbody">'+esc(e.spec)+'</div>';
+
+  /* ---- terms ---- */
+  if(e.terms) h+='<div class="brk"></div><h2>Terms and conditions</h2>'+
+    '<div class="terms'+(num((o||{}).terms_cols)===2?" two":"")+'">'+termsHtml(e.terms)+'</div>';
+
+  /* ---- closing page ---- */
+  h+='<div class="brk"></div><div class="bk"><div class="top2">'+mark+
+    '<h2 class="hd" style="border:0;padding:0;text-transform:none;letter-spacing:-.02em">Thank you</h2>'+
+    '<div class="sub2">'+(e.contact_note?esc(e.contact_note):
+      "We would be glad to talk through any part of this quotation. To accept, reply by email "+
+      "confirming acceptance and we will come back to you with a start date.")+'</div>'+
+    '<div class="cols2"><div><span class="k">Speak to us</span>'+
+    esc(o.phone||"")+'<br>'+esc(o.email||"")+'<br>'+esc(o.website||"")+'</div>'+
+    '<div><span class="k">Office</span>'+esc(o.name||"")+'<br>'+esc(o.address||"")+'<br>'+
+    esc(o.licence||"")+(o.abn?'<br>ABN '+esc(o.abn):"")+'</div></div></div>'+
+    '<div class="bar"></div><div class="shot">'+(back?'<img src="'+esc(back)+'" alt="">':"")+'</div></div>';
+  return h+'</div>';
+}
+
+/* ---------------- modals ---------------- */
+function openModal(h){ $("#modal").innerHTML='<div class="modal" data-act="mbg"><div class="sheet" id="sheet">'+h+'</div></div>'; }
+function closeModal(){ $("#modal").innerHTML=""; }
+function pickerHtml(q){
+  const taken={};
+  (pickMode==="plan"?D.plans.filter(p=>p.week_start===planWeek):D.moves.filter(mv=>mv.week_start===week))
+    .forEach(x=>taken[x.scope_item_id]=1);
+  const list=D.scope.filter(s=>!q||((s.code+" "+s.description).toLowerCase().indexOf(q.toLowerCase())>=0)).slice(0,60);
+  return '<div class="ph"><div class="pt">'+(pickMode==="plan"?"What are you planning?":"What did you work on?")+
+    '</div><button class="x" data-act="close">✕</button></div><div style="padding:14px">'+
+    '<input class="in" id="pickQ" placeholder="Search by ID or description" value="'+esc(q||"")+'" data-act="pickq">'+
+    '<div style="border:1px solid var(--line);border-radius:3px;max-height:52vh;overflow:auto;margin-top:10px">'+
+    (list.length?list.map(s=>'<button class="pick" data-act="pickone" data-id="'+s.id+'"'+(taken[s.id]?" disabled":"")+'>'+
+      '<span style="flex:1;min-width:0"><span style="font-weight:600;font-size:13px">'+esc(s.label||s.code)+'</span>'+
+      '<div class="ps clamp">'+esc(s.description)+'</div></span>'+
+      '<span style="text-align:right;white-space:nowrap;font-size:12px">'+money(num(s.rate),2)+' <span class="ps">per '+esc(s.unit||"")+'</span>'+
+      '<div class="'+(doneOf(s.id)>0?"neg":"ps")+'">'+(doneOf(s.id)>0?doneOf(s.id)+" of "+num(s.qty)+" recorded":"nothing recorded")+'</div></span></button>').join("")
+      :'<div class="empty">Nothing matches.</div>')+'</div></div>';
+}
+function costForm(c){
+  const f=c||{cost_date:week,area:AREAS[1],category:CATS[1],supplier:"",description:"",invoice_ref:"",
+    amount:"",status:"To Confirm",paid:0};
+  return '<div class="ph"><div class="pt">'+(c?"Edit this cost":"Add a cost")+'</div>'+
+    '<button class="x" data-act="close">✕</button></div><div style="padding:14px"><div class="grid2">'+
+    fld("Date",'<input class="in" type="date" id="f_date" value="'+esc(f.cost_date)+'">')+
+    fld("Amount ex GST",'<input class="in" inputmode="decimal" id="f_amount" value="'+esc(f.amount)+'">')+
+    fld("Supplier",'<input class="in" id="f_supplier" value="'+esc(f.supplier)+'">')+
+    fld("Category",'<select class="in" id="f_category">'+CATS.map(x=>'<option'+(f.category===x?" selected":"")+'>'+esc(x)+'</option>').join("")+'</select>')+
+    '</div>'+fld("What it was for",'<input class="in" id="f_desc" value="'+esc(f.description)+'">')+
+    '<div class="grid2">'+
+    fld("Area",'<select class="in" id="f_area">'+AREAS.map(x=>'<option'+(f.area===x?" selected":"")+'>'+esc(x)+'</option>').join("")+'</select>')+
+    fld("Invoice ref",'<input class="in" id="f_ref" value="'+esc(f.invoice_ref||"")+'">')+
+    fld("Payment status",'<select class="in" id="f_status">'+PAYS.map(x=>'<option'+(f.status===x?" selected":"")+'>'+esc(x)+'</option>').join("")+'</select>')+
+    fld("Paid so far",'<input class="in" inputmode="decimal" id="f_paid" value="'+esc(f.paid)+'">')+
+    (caps.costDue
+      ? fld("Terms",'<select class="in" id="f_terms"><option value="">Set the date myself</option>'+
+          [7,14,21,30,45,60].map(d=>'<option value="'+d+'"'+(num(f.terms_days)===d?" selected":"")+'>Net '+d+' days</option>').join("")+
+          '</select>')+
+        fld("Due date",'<input class="in" type="date" id="f_due" value="'+esc(f.due_date||"")+'">')
+      : '<div class="ps" style="grid-column:1/-1;margin-top:8px">Due dates are not switched on for '+
+        'this database yet. See the note on the Check tab.</div>')+
+    '</div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">'+
+    '<button class="btn q" data-act="close">Cancel</button>'+
+    '<button class="btn" data-act="costsave" data-id="'+(c?c.id:"")+'">Save</button></div></div>';
+}
+
+function nextQuoteNo(){
+  let n=num((D.org&&D.org.quote_seq)||1774);
+  D.ests.forEach(e=>{ const m=String(e.number||"").match(/(\d+)/);
+    if(m&&num(m[1])>n) n=num(m[1]); });
+  return "Q"+(n+1);
+}
+/* ---------------- actions ---------------- */
+const TBL={cl:"clients",ld:"leads",es:"estimates",it:"estimate_items",al:"estimate_allowances",
+  sec:"estimate_sections",jb2:"jobs",pi:"price_items",me:"measures"};
+const ARR={cl:"clients",ld:"leads",es:"ests",it:"items",al:"allow",sec:"secs",pi:"prices",me:"measures"};
+function setLocal(a,id,f,v){
+  const key=ARR[a]; if(!key||!D[key]) return;
+  D[key]=D[key].map(x=>{ if(x.id!==id) return x; const y=Object.assign({},x); y[f]=v; return y; });
+}
+const NUMF={est_value:1,qty:1,cost_each:1,margin_pct:1,amount:1,valid_days:1,cost:1,
+  default_margin:1,terms_cols:1};
+const NULLABLE={scope_item_id:1};
+const BOOLF={show_rates:1};
+const LONGF={terms:1,spec:1,letter:1,contact_note:1,items_intro:1,summary_intro:1,notes:1};
+async function saveField(a,el){
+  const id=el.getAttribute("data-id"),f=a==="sec"?"name":el.getAttribute("data-f");
+  let v=el.value;
+  // a long text field going from full to empty is almost always a glitch, not a decision
+  if(LONGF[f]&&v===""){
+    const key=ARR[a], was=key&&D[key]?(byId(D[key],id)||{})[f]:null;
+    if(was&&String(was).length>40&&
+       !confirm("This will erase "+String(was).length+" characters from that field.\n\nAre you sure?"))
+      { render(); return; }
+  }
+  if(NUMF[f]) v=num(v);
+  else if(BOOLF[f]) v=(v==="true");
+  else if(v==="") v=null;
+  if(NULLABLE[f]&&v==="") v=null;
+  const patch={}; patch[f]=v;
+  if(await db(sb.from(TBL[a]).update(patch).eq("id",id))){
+    setLocal(a,id,f,v);          // update in place rather than reloading the screen
+    if(!typing()) render();
+  }
+}
+function defSpec(){
+  return "1. Site establishment\n"+
+    "Describe the plant and labour involved, access requirements and how the site will be set up.\n\n"+
+    "2. The work\n"+
+    "Describe materials, depths, fixings and methods so the client knows exactly what they are buying.\n\n"+
+    "NOTE:\n"+
+    "- This quotation does not include replanting of existing plants.\n\n"+
+    "- This quotation does not include replacement of existing turf.\n\n"+
+    "- This quotation does not include replacement of existing gravel.\n\n"+
+    "As the construction will involve frequent machinery operation, MJ may cause some damage to the "+
+    "existing turf or landscaped areas. If the client wishes to include the cost of replacing any "+
+    "affected green or softscaping areas, please advise MJ. A separate quotation will be prepared accordingly.";
+}
+function defLetter(){
+  return "Thank you for the opportunity to quote on this project.\n\n"+
+    "Please find our price below, based on the drawings and information provided. "+
+    "The quote covers the work described and excludes anything not listed.\n\n"+
+    "We are happy to walk through the detail with you at any stage.";
+}
+function defTerms(){
+  return "1. This quotation is valid for the period shown and is subject to written acceptance.\n"+
+    "2. Prices are ex GST unless stated otherwise. GST is shown separately in the summary.\n"+
+    "3. Progress claims are issued monthly for work completed to date, payable within the agreed terms.\n"+
+    "4. Variations will be priced and approved in writing before the work is carried out.\n"+
+    "5. Allowances and prime cost sums are estimates. They will be adjusted to actual cost.\n"+
+    "6. Plant establishment and maintenance are included only where listed in the specification.\n"+
+    "7. We accept no responsibility for plant failure caused by conditions outside our control after handover.\n"+
+    "8. Access to the site, water and power are to be provided by others unless stated.";
+}
+async function db(p,label){
+  const {data,error}=await (typeof p.select==="function" ? p.select() : p);
+  if(error){ alert((label||"Could not save")+": "+error.message); return false; }
+  if(Array.isArray(data)&&data.length===0){
+    alert((label||"Nothing was saved")+".\n\nThe database refused the change, which usually means "+
+      "a permission rule is missing for that table. Tell me which screen you were on.");
+    return false;
+  }
+  return true;
+}
+document.addEventListener("click",async ev=>{
+  const el=ev.target.closest("[data-act],[data-tab]"); if(!el) return;
+  if(el.hasAttribute("data-tab")){ tab=el.getAttribute("data-tab"); render(); return; }
+  const a=el.getAttribute("data-act"),id=el.getAttribute("data-id");
+  if(a==="close"){ closeModal(); return; }
+  if(a==="mbg"){ if(ev.target.classList.contains("modal")) closeModal(); return; }
+  if(a==="wk"){ week=addDays(week,num(el.getAttribute("data-d"))); render(); return; }
+  if(a==="plwk"){ planWeek=addDays(planWeek,num(el.getAttribute("data-d"))); render(); return; }
+  if(a==="pct"){
+    const p=num(el.getAttribute("data-p")),t=byId(D.tasks,id);
+    const st=p===100?"Done":(p>0&&t.status==="Not started"?"On the go":t.status);
+    D.tasks=D.tasks.map(x=>x.id===id?Object.assign({},x,{pct:p,status:st}):x); render();
+    await db(sb.from("tasks").update({pct:p,status:st,updated_by:me.id}).eq("id",id)); return; }
+  if(a==="note"){
+    const body=prompt("What do you want the office to know?"); if(!body||!body.trim()) return;
+    if(await db(sb.from("task_comments").insert({org_id:prof.org_id,task_id:id,author_id:me.id,
+      author:prof.full_name||me.email,body:body.trim()}))){
+      const c=await sb.from("task_comments").select("*").order("created_at");
+      D.comments=c.data||D.comments; render(); } return; }
+  if(a==="pick"||a==="planpick"){ pickMode=(a==="planpick")?"plan":"week"; openModal(pickerHtml("")); return; }
+  if(a==="pickone"){
+    closeModal();
+    if(pickMode==="plan") await db(sb.from("plan_items").insert({org_id:prof.org_id,job_id:job.id,
+      scope_item_id:id,week_start:planWeek,qty:0}));
+    else await db(sb.from("movements").insert({org_id:prof.org_id,job_id:job.id,
+      scope_item_id:id,week_start:week,qty:0,created_by:me.id}));
+    await refresh(); return; }
+  if(a==="mvdel"){ if(await db(sb.from("movements").delete().eq("id",id))) await refresh(); return; }
+  if(a==="pldel"){ if(await db(sb.from("plan_items").delete().eq("id",id))) await refresh(); return; }
+  if(a==="shdel"){ if(await db(sb.from("timesheets").delete().eq("id",id))) await refresh(); return; }
+  if(a==="fillcrew"){
+    const have={}; D.sheets.filter(e=>e.week_start===week).forEach(e=>have[e.crew_id]=1);
+    const rows=D.crew.filter(c=>c.active&&!have[c.id]).map(c=>({org_id:prof.org_id,job_id:job.id,
+      crew_id:c.id,week_start:week,area:c.area}));
+    if(!rows.length) return;
+    if(await db(sb.from("timesheets").insert(rows))) await refresh(); return; }
+  if(a==="addone"){
+    const c=byId(D.crew,id);
+    if(await db(sb.from("timesheets").insert({org_id:prof.org_id,job_id:job.id,crew_id:id,
+      week_start:week,area:c?c.area:null}))) await refresh(); return; }
+  if(a==="logodel"){ if(!confirm("Remove the logo?")) return;
+    if(await db(sb.from("orgs").update({logo:null}).eq("id",prof.org_id))) await refresh(); return; }
+  if(a==="jobopen"){ localStorage.setItem(JOB_KEY,id); portfolio=null; estId=null; await refresh(); return; }
+  if(a==="jobadd"){
+    const name=prompt("What is the job called?"); if(!name||!name.trim()) return;
+    const {data,error}=await sb.from("jobs").insert({org_id:prof.org_id,name:name.trim(),
+      status:"Active",claim_day:25}).select().single();
+    if(error) return alert("Could not create the job: "+error.message);
+    localStorage.setItem(JOB_KEY,data.id); portfolio=null; tab="progress"; await refresh(); return; }
+  if(a==="jobdel"){
+    const j=byId(jobs,id);
+    if(!confirm("Delete "+j.name+" and everything on it — scope, costs, timesheets, claims and schedule?\n\nThis cannot be undone.")) return;
+    if(prompt("Type DELETE to confirm")!=="DELETE") return;
+    if(await db(sb.from("jobs").delete().eq("id",id))){
+      localStorage.removeItem(JOB_KEY); portfolio=null; await refresh(); }
+    return; }
+  if(a==="scopeadd"){
+    openModal('<div class="ph"><div class="pt">Add a scope line</div><button class="x" data-act="close">✕</button></div>'+
+      '<div style="padding:14px"><div class="grid2">'+
+      fld("Code",'<input class="in" id="s_code" placeholder="S1-4.2">')+
+      fld("Area",'<select class="in" id="s_area">'+AREAS.map(a=>'<option>'+esc(a)+'</option>').join("")+'</select>')+
+      fld("Unit",'<input class="in" id="s_unit" placeholder="m2">')+
+      fld("Kind",'<select class="in" id="s_kind"><option>Original Contract</option><option>PC Item</option><option>Variation</option></select>')+
+      fld("Quantity",'<input class="in" id="s_qty" inputmode="decimal" value="0">')+
+      fld("Rate",'<input class="in" id="s_rate" inputmode="decimal" value="0">')+
+      '</div>'+fld("Description",'<textarea class="in" id="s_desc" rows="3"></textarea>')+
+      '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">'+
+      '<button class="btn q" data-act="close">Cancel</button>'+
+      '<button class="btn" data-act="scopesave">Add line</button></div></div>');
+    return; }
+  if(a==="scopesave"){
+    const g=x=>document.getElementById("s_"+x).value;
+    if(!g("code").trim()) return alert("Give the line a code.");
+    closeModal();
+    if(await db(sb.from("scope_items").insert({org_id:prof.org_id,job_id:job.id,code:g("code").trim(),
+      label:g("code").trim(),area:g("area"),kind:g("kind"),description:g("desc"),unit:g("unit"),
+      qty:num(g("qty")),rate:num(g("rate")),opening_qty:0,sort:D.scope.length}))) await refresh();
+    return; }
+  if(a==="gpopen"){ openModal(gpForm()); return; }
+  if(a==="gpreset"){
+    const p=GPRESETS[num(el.getAttribute("data-i"))]; if(!p) return;
+    const r=p[1]();
+    document.getElementById("g_from").value=r[0];
+    document.getElementById("g_to").value=r[1];
+    return; }
+  if(a==="gpgo"){
+    const v=x=>{const el=document.getElementById("g_"+x);return el?el.value:"";};
+    const ck=x=>{const el=document.getElementById("g_"+x);return !!(el&&el.checked);};
+    let from=v("from"),to=v("to");
+    if(!from||!to) return alert("Fill in both dates.");
+    if(to<from){ const t=from; from=to; to=t; }
+    if(dayDiff(from,to)>1460) return alert("That is more than four years. Pick a shorter run of dates.");
+    gp={from:from,to:to,scale:v("scale")||"auto",orient:v("orient")||"land",area:v("area")||"",
+      hideDone:ck("done"),group:ck("grp"),showWho:ck("who"),showPct:ck("pct")};
+    closeModal(); render(); return; }
+  if(a==="gpshift"){
+    if(!gp) return; const n=num(el.getAttribute("data-n"));
+    gp.from=addDays(gp.from,n); gp.to=addDays(gp.to,n); render(); return; }
+  if(a==="gpprint"){ window.print(); return; }
+  if(a==="gpclose"){ gp=null; gpPageStyle(false); render(); return; }
+  if(a==="schedview"){ schedView=(schedView==="gantt")?"list":"gantt"; render(); return; }
+  if(a==="schedtoday"){ const w=document.querySelector(".gwrap"),ln=document.querySelector(".gtoday");
+    if(w&&ln) w.scrollLeft=Math.max(ln.offsetLeft-w.clientWidth/2,0); return; }
+  if(a==="taskadd"){ openModal(taskForm(null)); return; }
+  if(a==="taskedit"){ openModal(taskForm(byId(D.tasks,id))); return; }
+  if(a==="taskdel"){ if(!confirm("Delete this task?")) return; closeModal();
+    if(await db(sb.from("tasks").delete().eq("id",id))) await refresh(); return; }
+  if(a==="tasksave"){
+    const g=x=>document.getElementById("t_"+x).value;
+    if(!g("name").trim()) return alert("Give the task a name.");
+    const rec={job_id:job.id,name:g("name"),start_date:g("start"),days:Math.max(num(g("days")),1),
+      assignee:g("who"),status:g("status"),colour:g("colour"),
+      pct:Math.min(Math.max(num(g("pct")),0),100),
+      scope_item_id:g("scope")||null,updated_by:me.id};
+    closeModal();
+    if(await db(id?sb.from("tasks").update(rec).eq("id",id)
+                  :sb.from("tasks").insert(Object.assign({org_id:prof.org_id},rec)))) await refresh();
+    return; }
+  if(a==="newclient"){
+    const nm=prompt("Client or company name"); if(!nm||!nm.trim()) return;
+    const {data,error}=await sb.from("clients").insert({org_id:prof.org_id,name:nm.trim()})
+      .select().single();
+    if(error) return alert("Could not add the client: "+error.message);
+    const r=await sb.from("estimates").update({client_id:data.id}).eq("id",id).select();
+    if(r.error) return alert("Client added but not linked: "+r.error.message);
+    await refresh(); return; }
+  if(a==="clientadd"){
+    const nm=prompt("Client or company name"); if(!nm||!nm.trim()) return;
+    const {error}=await sb.from("clients").insert({org_id:prof.org_id,name:nm.trim()});
+    if(error) return alert("Could not add the client: "+error.message);
+    await refresh(); return; }
+  if(a==="cldel2"){ if(!confirm("Delete this client? Their leads and quotes stay but lose the link.")) return;
+    if(await db(sb.from("clients").delete().eq("id",id))) await refresh(); return; }
+  if(a==="leadadd"){
+    if(await db(sb.from("leads").insert({org_id:prof.org_id,title:"New lead",status:"New",est_value:0}))) await refresh(); return; }
+  if(a==="leaddel"){ if(!confirm("Delete this lead?")) return;
+    if(await db(sb.from("leads").delete().eq("id",id))) await refresh(); return; }
+  if(a==="leadquote"){
+    const l=byId(D.leads,id);
+    const no=nextQuoteNo();
+    const {data,error}=await sb.from("estimates").insert({org_id:prof.org_id,client_id:l.client_id,
+      lead_id:l.id,number:no,title:l.title,issue_date:isoOf(new Date()),valid_days:30,
+      letter:defLetter(),spec:(D.org&&D.org.default_spec)||defSpec(),show_rates:true,
+      terms:(D.org&&D.org.default_terms)||defTerms(),status:"Draft"}).select().single();
+    if(error) return alert("Could not create the quote: "+error.message);
+    await sb.from("estimate_sections").insert({estimate_id:data.id,name:"Site works",sort:0});
+    await sb.from("leads").update({status:"Quoting"}).eq("id",l.id);
+    estId=data.id; tab="quotes"; await refresh(); return; }
+  if(a==="estadd"){
+    const no=nextQuoteNo();
+    const {data,error}=await sb.from("estimates").insert({org_id:prof.org_id,number:no,title:"New quote",
+      issue_date:isoOf(new Date()),valid_days:30,letter:defLetter(),show_rates:true,
+      spec:(D.org&&D.org.default_spec)||defSpec(),
+      terms:(D.org&&D.org.default_terms)||defTerms(),status:"Draft"}).select().single();
+    if(error) return alert("Could not create the quote: "+error.message);
+    await sb.from("estimate_sections").insert({estimate_id:data.id,name:"Site works",sort:0});
+    await sb.from("orgs").update({quote_seq:num(no.replace(/\D/g,""))}).eq("id",prof.org_id);
+    estId=data.id; await refresh(); return; }
+  if(a==="estopen"){ estId=id; render(); return; }
+  if(a==="estback"){ estId=null; render(); return; }
+  if(a==="estdel"){ if(!confirm("Delete this quote and everything on it?")) return;
+    if(await db(sb.from("estimates").delete().eq("id",id))){ estId=null; await refresh(); } return; }
+  if(a==="estprint"){ printing=true; render(); return; }
+  if(a==="unprint"){ printing=false; render(); return; }
+  if(a==="doprint"){ window.print(); return; }
+  if(a==="secadd"){
+    const n=D.secs.filter(s=>s.estimate_id===estId).length;
+    if(await db(sb.from("estimate_sections").insert({estimate_id:estId,name:"New section",sort:n}))) await refresh(); return; }
+  if(a==="secdel"){ if(!confirm("Delete this section and its lines?")) return;
+    if(await db(sb.from("estimate_sections").delete().eq("id",id))) await refresh(); return; }
+  if(a==="copyfix"){
+    const k=el.getAttribute("data-k"), ta=document.createElement("textarea");
+    ta.value=FIXES[k].sql; ta.style.position="fixed"; ta.style.top="-1000px";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); alert("Copied. Paste it into Supabase, SQL Editor, and press Run."); }
+    catch(e){ alert("Could not copy. Select the text in the box and copy it by hand."); }
+    document.body.removeChild(ta); return; }
+  if(a==="runcheck"){ await runCheck(); return; }
+  if(a==="measadd"){
+    if(await db(sb.from("measures").insert({org_id:prof.org_id,job_id:job.id,
+      measured_on:isoOf(new Date()),source:"Site count",qty:0}))) await refresh(); return; }
+  if(a==="medel"){ if(!confirm("Delete this measurement?")) return;
+    if(await db(sb.from("measures").delete().eq("id",id))) await refresh(); return; }
+  if(a==="meverify"){ const x=byId(D.measures,id);
+    if(await db(sb.from("measures").update({verified:!x.verified}).eq("id",id))) await refresh(); return; }
+  if(a==="usemeas"){
+    const s=byId(D.scope,id), meas=measuredFor(id), rec=doneOf(id);
+    const gap=Math.round((meas-rec)*1000)/1000;
+    if(!confirm("Set "+(s.label||s.code)+" to the measured quantity?\n\nRecorded "+rec+
+      ", measured "+meas+".\nThis adds "+(gap>0?"+":"")+gap+" against the week of "+fmtDay(week)+".")) return;
+    const ex=D.moves.filter(mv=>mv.scope_item_id===id&&mv.week_start===week)[0];
+    const ok = ex
+      ? await db(sb.from("movements").update({qty:num(ex.qty)+gap}).eq("id",ex.id))
+      : await db(sb.from("movements").insert({org_id:prof.org_id,job_id:job.id,
+          scope_item_id:id,week_start:week,qty:gap,created_by:me.id}));
+    if(ok) await refresh(); return; }
+  if(a==="priceadd"){
+    if(await db(sb.from("price_items").insert({org_id:prof.org_id,name:"New item",unit:"m2",
+      cost:0,margin_pct:num((D.org||{}).default_margin)||20}))) await refresh(); return; }
+  if(a==="pidel"){ if(!confirm("Delete this price list item? Quotes already using it keep their own copy.")) return;
+    if(await db(sb.from("price_items").delete().eq("id",id))) await refresh(); return; }
+  if(a==="ppick"){ pickSection=id; openModal(pricePicker("")); return; }
+  if(a==="ppone"){
+    const x=byId(D.prices,id), s=pickSection;
+    closeModal();
+    const n=D.items.filter(i=>i.section_id===s).length;
+    if(await db(sb.from("estimate_items").insert({section_id:s,description:x.name,unit:x.unit,
+      qty:1,cost_each:num(x.cost),margin_pct:num(x.margin_pct),price_item_id:x.id,sort:n}))){
+      await sb.from("price_items").update({used_count:num(x.used_count)+1}).eq("id",x.id);
+      await refresh(); }
+    return; }
+  if(a==="estdup"){
+    const e=byId(D.ests,id);
+    if(!confirm("Make a copy of "+e.no+" as a new draft?".replace("undefined",e.number))) return;
+    const {data:ne,error}=await sb.from("estimates").insert({org_id:prof.org_id,client_id:e.client_id,
+      number:nextQuoteNo(),title:(e.title||"")+" (copy)",site_address:e.site_address,
+      issue_date:isoOf(new Date()),valid_days:e.valid_days,letter:e.letter,spec:e.spec,terms:e.terms,
+      contact_note:e.contact_note,items_intro:e.items_intro,summary_intro:e.summary_intro,
+      show_rates:e.show_rates,default_margin:e.default_margin,status:"Draft"}).select().single();
+    if(error) return alert("Could not copy: "+error.message);
+    for(const s of D.secs.filter(x=>x.estimate_id===id)){
+      const {data:ns}=await sb.from("estimate_sections").insert({estimate_id:ne.id,name:s.name,sort:s.sort}).select().single();
+      const rows=D.items.filter(i=>i.section_id===s.id).map(i=>({section_id:ns.id,description:i.description,
+        unit:i.unit,qty:i.qty,cost_each:i.cost_each,margin_pct:i.margin_pct,price_item_id:i.price_item_id,sort:i.sort}));
+      if(rows.length) await sb.from("estimate_items").insert(rows);
+    }
+    const alw=D.allow.filter(x=>x.estimate_id===id).map(a2=>({estimate_id:ne.id,description:a2.description,
+      amount:a2.amount,sort:a2.sort}));
+    if(alw.length) await sb.from("estimate_allowances").insert(alw);
+    estId=ne.id; await refresh(); return; }
+  if(a==="est2job"){
+    const e=byId(D.ests,id), T=estTotals(e);
+    const cl=byId(D.clients,e.client_id);
+    if(!confirm("Create a job from "+e.number+"?\n\nEvery quoted line becomes a scope line at the price "+
+      "the client sees, so you can measure and claim against it. The quote itself is not changed.")) return;
+    const {data:nj,error}=await sb.from("jobs").insert({org_id:prof.org_id,client_id:e.client_id,
+      name:e.title||e.number,ref:e.number,status:"Active",claim_day:25}).select().single();
+    if(error) return alert("Could not create the job: "+error.message);
+    const rows=[]; let n=0;
+    D.secs.filter(s=>s.estimate_id===id).forEach(s=>{
+      D.items.filter(i=>i.section_id===s.id).forEach(i=>{
+        const sell=num(i.cost_each)*(1+num(i.margin_pct)/100);
+        rows.push({org_id:prof.org_id,job_id:nj.id,code:(s.name||"").slice(0,12).toUpperCase().replace(/\s+/g,"-")+"-"+(n+1),
+          label:(i.description||"").slice(0,40),area:s.name,kind:"Original Contract",
+          description:i.description,unit:i.unit,qty:num(i.qty),rate:sell,opening_qty:0,sort:n});
+        n++; }); });
+    D.allow.filter(x=>x.estimate_id===id).forEach(a2=>{
+      rows.push({org_id:prof.org_id,job_id:nj.id,code:"PC-"+(n+1),label:(a2.description||"").slice(0,40),
+        area:"Allowances",kind:"PC Item",description:a2.description,unit:"item",qty:1,
+        rate:num(a2.amount),opening_qty:0,sort:n}); n++; });
+    if(rows.length){ const r=await sb.from("scope_items").insert(rows);
+      if(r.error) return alert("Job made but the scope did not load: "+r.error.message); }
+    await sb.from("estimates").update({job_id:nj.id,status:"Accepted",decided_at:isoOf(new Date())}).eq("id",id);
+    if(e.lead_id) await sb.from("leads").update({status:"Won"}).eq("id",e.lead_id);
+    localStorage.setItem(JOB_KEY,nj.id); portfolio=null; estId=null; tab="progress";
+    await refresh();
+    alert("Job created with "+rows.length+" scope lines, worth "+money(T.sub,2)+" ex GST.");
+    return; }
+  if(a==="itemadd"){
+    const n=D.items.filter(i=>i.section_id===id).length;
+    const e0=byId(D.ests,estId)||{};
+    if(await db(sb.from("estimate_items").insert({section_id:id,description:"",unit:"m2",qty:0,
+      cost_each:0,margin_pct:num(e0.default_margin)||20,sort:n}))) await refresh(); return; }
+  if(a==="itemdel"){ if(await db(sb.from("estimate_items").delete().eq("id",id))) await refresh(); return; }
+  if(a==="alwadd"){
+    const n=D.allow.filter(x=>x.estimate_id===estId).length;
+    if(await db(sb.from("estimate_allowances").insert({estimate_id:estId,description:"",amount:0,sort:n}))) await refresh(); return; }
+  if(a==="alwdel"){ if(await db(sb.from("estimate_allowances").delete().eq("id",id))) await refresh(); return; }
+  if(a==="costadd"){ openModal(costForm(null)); return; }
+  if(a==="costedit"){ openModal(costForm(byId(D.costs,id))); return; }
+  if(a==="costdel"){ if(!confirm("Delete this cost?")) return;
+    if(await db(sb.from("costs").delete().eq("id",id))) await refresh(); return; }
+  if(a==="costsave"){
+    const g=x=>document.getElementById("f_"+x).value;
+    if(!g("supplier").trim()||!num(g("amount"))) return alert("A supplier and an amount are needed.");
+    const rec={job_id:job.id,cost_date:g("date"),week_start:isoOf(mondayOf(g("date"))),
+      area:g("area"),category:g("category"),supplier:g("supplier"),description:g("desc"),
+      invoice_ref:g("ref"),amount:num(g("amount")),status:g("status"),paid:num(g("paid"))};
+    if(caps.costDue){
+      rec.terms_days=num(g("terms"))||null;
+      rec.due_date=g("due")||(num(g("terms"))?addDays(g("date"),num(g("terms"))):null);
+    }
+    closeModal();
+    if(await db(id?sb.from("costs").update(rec).eq("id",id)
+                  :sb.from("costs").insert(Object.assign({org_id:prof.org_id},rec)))) await refresh();
+    return; }
+  if(a==="crewadd"){
+    if(await db(sb.from("crew").insert({org_id:prof.org_id,name:"New person",basis:"Daily",
+      rate:0,category:"Labour",area:AREAS[1],active:true}))) await refresh(); return; }
+  if(a==="cwactive"){ const c=byId(D.crew,id);
+    if(await db(sb.from("crew").update({active:!c.active}).eq("id",id))) await refresh(); return; }
+  if(a==="cwdel"){ if(!confirm("Remove this person? Their recorded weeks stay.")) return;
+    if(await db(sb.from("crew").delete().eq("id",id))) await refresh(); return; }
+  if(a==="cldel"){ const c=byId(D.claims,id);
+    if(!confirm("Delete claim "+c.no+"? Its quantities go back into what is ready to claim.")) return;
+    if(await db(sb.from("claims").delete().eq("id",id))) await refresh(); return; }
+  if(a==="raise"){
+    const m=model(),lines=[];
+    D.scope.filter(claimable).forEach(s=>{
+      const already=m.claimedBy[s.id]||0,sug=Math.max(doneOf(s.id)-already,0);
+      const qty=claimAdj[s.id]===undefined?sug:num(claimAdj[s.id]);
+      if(qty>0) lines.push({scope_item_id:s.id,qty:qty}); });
+    if(!lines.length) return;
+    let lastTo=""; D.claims.forEach(c=>{ if(c.period_to>lastTo) lastTo=c.period_to; });
+    const {data,error}=await sb.from("claims").insert({org_id:prof.org_id,job_id:job.id,
+      no:"PC-"+String(D.claims.length+1).padStart(2,"0"),
+      period_from:lastTo?addDays(lastTo,1):null,period_to:claimTo,status:"Draft"}).select().single();
+    if(error) return alert("Could not raise the claim: "+error.message);
+    if(await db(sb.from("claim_lines").insert(lines.map(l=>Object.assign({claim_id:data.id},l))))){
+      claimAdj={}; await refresh(); }
+    return; }
+});
+
+document.addEventListener("change",async ev=>{
+  const el=ev.target,a=el.getAttribute&&el.getAttribute("data-act"); if(!a) return;
+  const id=el.getAttribute("data-id"),v=el.value;
+  if(a==="wkset"){ week=isoOf(mondayOf(v)); render(); return; }
+  if(a==="st"){
+    const patch=v==="Done"?{status:v,pct:100}:{status:v};
+    D.tasks=D.tasks.map(x=>x.id===id?Object.assign({},x,patch):x); render();
+    await db(sb.from("tasks").update(Object.assign({updated_by:me.id},patch)).eq("id",id)); return; }
+  if(a==="cstatus"){ if(await db(sb.from("costs").update({status:v}).eq("id",id))) await refresh(); return; }
+  if(a==="clstat"){ if(await db(sb.from("claims").update({status:v}).eq("id",id))) await refresh(); return; }
+  if(a==="cw"){ const f=el.getAttribute("data-f"),val=(f==="rate")?num(v):v;
+    const patch={}; patch[f]=val;
+    if(await db(sb.from("crew").update(patch).eq("id",id))) await refresh(); return; }
+  if(a==="costcat"){ costCat=v; render(); return; }
+  if(a==="leadfilter"){ leadFilter=v; render(); return; }
+  if(a==="jobpick"){ localStorage.setItem(JOB_KEY,v); portfolio=null; estId=null; await refresh(); return; }
+  if(a==="jb"){ const f=el.getAttribute("data-f");
+    const patch={}; patch[f]=(f==="client_id"&&v==="")?null:v;
+    if(await db(sb.from("jobs").update(patch).eq("id",id))){ portfolio=null; await refresh(); } return; }
+  if(a==="eststat"){ if(await db(sb.from("estimates").update({status:v}).eq("id",id))) await refresh(); return; }
+  if(a==="measfilter"){ measScope=v; render(); return; }
+  if(a==="cl"||a==="ld"||a==="es"||a==="it"||a==="al"||a==="sec"||a==="jb2"||a==="pi"||a==="me"){
+    await saveField(a,el); return; }
+  if(a==="claimto"){ claimTo=v; render(); return; }
+  if(a==="og"){ const f=el.getAttribute("data-f");
+    if((f==="default_terms"||f==="default_spec")&&v===""){
+      const was=(D.org||{})[f];
+      if(was&&String(was).length>40&&!confirm("This will erase "+String(was).length+
+        " characters of your standard wording.\n\nAre you sure?")){ render(); return; } }
+    const patch={}; patch[f]=(f==="quote_seq"||f==="terms_cols")?num(v):v;
+    if(await db(sb.from("orgs").update(patch).eq("id",prof.org_id))) await refresh(); return; }
+  if(a==="shotdel"){ const f=el.getAttribute("data-f");
+    if(!confirm("Remove this photo?")) return;
+    const patch={}; patch[f]=null;
+    if(await db(sb.from("orgs").update(patch).eq("id",prof.org_id))) await refresh(); return; }
+  if(a==="shotup"&&el.files&&el.files[0]){
+    const f=el.getAttribute("data-f"),rd=new FileReader(),img=new Image();
+    rd.onload=()=>{ img.onload=async()=>{
+      const W=1400,sc=Math.min(W/img.width,1);
+      const cv=document.createElement("canvas");
+      cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      const url=cv.toDataURL("image/jpeg",0.72);
+      if(url.length>1800000) return alert("That photo is too big even after resizing. Try another.");
+      const patch={}; patch[f]=url;
+      if(await db(sb.from("orgs").update(patch).eq("id",prof.org_id))) await refresh();
+    }; img.src=rd.result; };
+    rd.readAsDataURL(el.files[0]); return; }
+  if(a==="logoup"&&el.files&&el.files[0]){
+    const rd=new FileReader(),img=new Image();
+    rd.onload=()=>{ img.onload=async()=>{
+      // trim the blank margin so it sits tight on the letterhead
+      const c0=document.createElement("canvas");
+      c0.width=img.width; c0.height=img.height;
+      const x0=c0.getContext("2d"); x0.drawImage(img,0,0);
+      let L=img.width,R=0,T=img.height,B=0;
+      try{
+        const px=x0.getImageData(0,0,img.width,img.height).data;
+        for(let y=0;y<img.height;y++) for(let x=0;x<img.width;x++){
+          const i=(y*img.width+x)*4, a=px[i+3];
+          const light=px[i]>245&&px[i+1]>245&&px[i+2]>245;
+          if(a>12&&!light){ if(x<L)L=x; if(x>R)R=x; if(y<T)T=y; if(y>B)B=y; } }
+      }catch(err){ L=0;R=img.width-1;T=0;B=img.height-1; }
+      if(R<L||B<T){ L=0;R=img.width-1;T=0;B=img.height-1; }
+      const w0=R-L+1,h0=B-T+1,W=Math.min(560,w0),sc=W/w0;
+      const cv=document.createElement("canvas");
+      cv.width=Math.round(w0*sc); cv.height=Math.round(h0*sc);
+      cv.getContext("2d").drawImage(img,L,T,w0,h0,0,0,cv.width,cv.height);
+      const url=cv.toDataURL("image/png");
+      if(url.length>900000) return alert("That image is too big. Try a smaller or simpler file.");
+      if(await db(sb.from("orgs").update({logo:url}).eq("id",prof.org_id))) await refresh();
+    }; img.src=rd.result; };
+    rd.readAsDataURL(el.files[0]); return; }
+  if(a==="photo"&&el.files&&el.files[0]){
+    busy=true;
+    const rd=new FileReader(),img=new Image();
+    rd.onload=()=>{ img.onload=async()=>{
+      const max=1200,sc=Math.min(max/img.width,max/img.height,1);
+      const cv=document.createElement("canvas");
+      cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      cv.toBlob(async b=>{
+        const path=prof.org_id+"/"+id+"/"+Date.now()+".jpg";
+        const up=await sb.storage.from("site-files").upload(path,b,{contentType:"image/jpeg"});
+        if(up.error){ busy=false; return alert("Upload failed: "+up.error.message); }
+        await db(sb.from("task_files").insert({org_id:prof.org_id,task_id:id,job_id:job.id,
+          path:path,kind:"photo",uploaded_by:me.id}));
+        const fl=await sb.from("task_files").select("*").order("created_at");
+        D.files=fl.data||D.files; busy=false; render();
+      },"image/jpeg",0.72); }; img.src=rd.result; };
+    rd.readAsDataURL(el.files[0]);
+  }
+});
+
+document.addEventListener("input",ev=>{
+  const el=ev.target,a=el.getAttribute&&el.getAttribute("data-act"); if(!a) return;
+  const id=el.getAttribute("data-id"),v=el.value;
+  if(a==="mvq") D.moves=D.moves.map(x=>x.id===id?Object.assign({},x,{qty:v}):x);
+  else if(a==="plq") D.plans=D.plans.map(x=>x.id===id?Object.assign({},x,{qty:v}):x);
+  else if(a==="day"){ const f="d"+el.getAttribute("data-i");
+    D.sheets=D.sheets.map(x=>{ if(x.id!==id) return x; const y=Object.assign({},x); y[f]=v; return y; }); }
+  else if(a==="ovr") D.sheets=D.sheets.map(x=>x.id===id?Object.assign({},x,{override_amount:v}):x);
+  else if(a==="open") D.scope=D.scope.map(x=>x.id===id?Object.assign({},x,{opening_qty:v}):x);
+  else if(a==="cert") D.claims=D.claims.map(x=>x.id===id?Object.assign({},x,{certified:v}):x);
+  else if(a==="recd") D.claims=D.claims.map(x=>x.id===id?Object.assign({},x,{received:v}):x);
+  else if(a==="cadj") claimAdj[id]=v;
+  else if(a==="cl"||a==="ld"||a==="es"||a==="it"||a==="al"||a==="sec"||a==="pi"||a==="me"){
+    setLocal(a,id,a==="sec"?"name":el.getAttribute("data-f"),v); }
+  else if(a==="jb"){ const f2=el.getAttribute("data-f");
+    jobs=jobs.map(x=>{ if(x.id!==id) return x; const y=Object.assign({},x); y[f2]=v; return y; }); }
+  else if(a==="priceq") priceQ=v;
+  else if(a==="ppq"){ const pos=el.selectionStart; $("#sheet").innerHTML=pricePicker(v);
+    const nb=document.getElementById("pickQ"); nb.focus(); nb.setSelectionRange(pos,pos); }
+  else if(a==="pgq") pgQ=v;
+  else if(a==="costq") costQ=v;
+  else if(a==="pickq"){ const pos=el.selectionStart;
+    $("#sheet").innerHTML=pickerHtml(v);
+    const nb=document.getElementById("pickQ"); nb.focus(); nb.setSelectionRange(pos,pos); }
+});
+
+document.addEventListener("blur",async ev=>{
+  const el=ev.target,a=el.getAttribute&&el.getAttribute("data-act"); if(!a) return;
+  const id=el.getAttribute("data-id"),v=el.value;
+  if(a==="mvq"){ if(await db(sb.from("movements").update({qty:num(v)}).eq("id",id))) render(); }
+  else if(a==="plq"){ if(await db(sb.from("plan_items").update({qty:num(v)}).eq("id",id))) render(); }
+  else if(a==="day"){ const f="d"+el.getAttribute("data-i"),patch={};
+    patch[f]=(v==="")?null:num(v);
+    if(await db(sb.from("timesheets").update(patch).eq("id",id))) render(); }
+  else if(a==="ovr"){ if(await db(sb.from("timesheets").update({override_amount:(v===""?null:num(v))}).eq("id",id))) render(); }
+  else if(a==="open"){ if(await db(sb.from("scope_items").update({opening_qty:num(v)}).eq("id",id))) render(); }
+  else if(a==="cert"){ if(await db(sb.from("claims").update({certified:(v===""?null:num(v))}).eq("id",id))) render(); }
+  else if(a==="recd"){ if(await db(sb.from("claims").update({received:num(v)}).eq("id",id))) render(); }
+  else if(a==="cl"||a==="ld"||a==="es"||a==="it"||a==="al"||a==="sec"||a==="pi"||a==="me"){ await saveField(a,el); }
+  else if(a==="priceq") render();
+  else if(a==="jb"){ const f=el.getAttribute("data-f"),patch={}; patch[f]=el.value;
+    if(await db(sb.from("jobs").update(patch).eq("id",el.getAttribute("data-id")))) portfolio=null; }
+  if(pendingRender){ pendingRender=false; setTimeout(render,0); }
+  else if(a==="pgq"||a==="costq"||a==="cadj") render();
+},true);
+
+boot();
+</script>
+</body>
+</html>
