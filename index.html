@@ -434,7 +434,7 @@ function watch(){
       D.comments=c.data||D.comments; lastSync=new Date(); if(!busy&&!typing()) render(); })
    .subscribe();
 }
-async function refresh(){ await loadAll(); render(); }
+async function refresh(){ pay=null; await loadAll(); render(); }
 
 /* Quotes made before the rate columns became the default still carry show_rates = false.
    Switch them on once, then never touch the setting again so a deliberate choice sticks. */
@@ -534,7 +534,7 @@ function render(){
   const tabs=admin()
     ?[["week","This week"],["plan","Plan"],["sched","Schedule"],["money","Money"],
       ["progress","Progress"]].concat(caps.measures?[["measure","Measure"]]:[])
-      .concat([["costs","Costs"],["claims","Claims"],["crew","Crew"],
+      .concat([["costs","Costs"],["pay","Payables"],["claims","Claims"],["crew","Crew"],
       ["leads","Leads"],["quotes","Quotes"]])
       .concat(caps.prices?[["prices","Price list"]]:[])
       .concat([["clients","Clients"],["jobs","Jobs"],["biz","Business"],["check","Check"]])
@@ -570,6 +570,7 @@ function render(){
   else if(tab==="progress") v.innerHTML=viewProgress(m);
   else if(tab==="measure") v.innerHTML=viewMeasure(m);
   else if(tab==="costs") v.innerHTML=viewCosts(m);
+  else if(tab==="pay"){ v.innerHTML=viewPayables(); if(!pay) loadPayables(); }
   else if(tab==="claims") v.innerHTML=viewClaims(m);
   else if(tab==="leads") v.innerHTML=viewLeads();
   else if(tab==="quotes") v.innerHTML=estId?viewEstimate():viewQuotes();
@@ -1559,6 +1560,109 @@ function viewCosts(m){
   return h+'<tr class="tot"><td colspan="5">Total shown</td><td class="r">'+money(total,2)+'</td><td colspan="2"></td></tr></tbody></table></div></div>';
 }
 
+/* ---------- Payables: every supplier, every job, by month ---------- */
+let pay=null, payMonth=null;
+function eom(d,plus){ const p=String(d).split("-").map(Number); return isoOf(new Date(p[0],p[1]+(plus||0),0)); }
+function monthKey(d){ return String(d||"").slice(0,7); }
+function addMonths(k,n){ const p=k.split("-").map(Number); return isoOf(new Date(p[0],p[1]-1+n,1)).slice(0,7); }
+function monthName(k){ const p=k.split("-").map(Number);
+  return new Date(p[0],p[1]-1,1).toLocaleDateString("en-AU",{month:"long",year:"numeric"}); }
+function jobName(id){ const j=byId(jobs,id); return j?j.name:"—"; }
+function owingOf(c){ return c.status==="Paid"?0:Math.max(0,num(c.amount)-num(c.paid)); }
+async function loadPayables(){
+  const r=await sb.from("costs").select("*").order("cost_date",{ascending:false});
+  pay={costs:r.data||[]}; render();
+}
+async function payReload(){   // after a change on the Payables tab: refresh it and the open job's cost log
+  await loadPayables();
+  if(job) D.costs=pay.costs.filter(c=>c.job_id===job.id);
+  render();
+}
+function viewPayables(){
+  if(!pay) return '<div class="panel"><div class="empty">Working out what you owe…</div></div>';
+  const today=isoOf(new Date()), thisM=monthKey(today), nextM=addMonths(thisM,1);
+  if(!payMonth) payMonth=thisM;
+  const open=pay.costs.filter(c=>owingOf(c)>0&&c.status!=="Internal / Accrued");
+  const bucket=c=>{ if(!c.due_date) return "none"; if(c.due_date<today) return "late";
+    const k=monthKey(c.due_date); return k===thisM?"this":k===nextM?"next":"later"; };
+  const sum=a=>a.reduce((x,c)=>x+owingOf(c),0);
+  const late=open.filter(c=>bucket(c)==="late"), due1=open.filter(c=>bucket(c)==="this"),
+        due2=open.filter(c=>bucket(c)==="next"), none=open.filter(c=>bucket(c)==="none");
+  const unc=open.filter(c=>c.status==="To Confirm"||c.status==="Awaiting Invoice");
+  let h='<div class="band">'+
+    cell("Overdue",money(sum(late)),late.length+" invoice"+(late.length===1?"":"s"),late.length?"neg":"")+
+    cell("Due "+monthName(thisM),money(sum(due1)),due1.length+" invoice"+(due1.length===1?"":"s"))+
+    cell("Due "+monthName(nextM),money(sum(due2)),due2.length+" invoice"+(due2.length===1?"":"s"))+
+    cell("Total outstanding",money(sum(open)),"All suppliers, all jobs")+
+    cell("Not confirmed",money(sum(unc)),unc.length+" to chase",unc.length?"neg":"")+
+    '</div>';
+  // by supplier
+  const S={};
+  open.forEach(c=>{ const k=(c.supplier||"—").trim(); const s=S[k]=S[k]||{late:0,this:0,next:0,later:0,none:0,n:0};
+    s[bucket(c)]+=owingOf(c); s.n++; });
+  const sups=Object.keys(S).sort((a,b)=>(S[b].late+S[b].this+S[b].next+S[b].later+S[b].none)-(S[a].late+S[a].this+S[a].next+S[a].later+S[a].none));
+  h+='<div class="panel"><div class="ph"><div><div class="pt">By supplier</div><div class="ps">What is still owing, ex GST, across every job</div></div></div>'+
+    '<div class="scroll"><table><thead><tr><th>Supplier</th><th class="r">Overdue</th><th class="r">'+monthName(thisM).split(" ")[0]+'</th>'+
+    '<th class="r">'+monthName(nextM).split(" ")[0]+'</th><th class="r">Later</th><th class="r">No date</th><th class="r">Total</th><th class="r">Invoices</th></tr></thead><tbody>';
+  const T={late:0,this:0,next:0,later:0,none:0,n:0};
+  sups.forEach(k=>{ const s=S[k]; Object.keys(T).forEach(x=>T[x]+=s[x]);
+    const tot=s.late+s.this+s.next+s.later+s.none;
+    h+='<tr><td style="font-weight:600">'+esc(k)+'</td><td class="r'+(s.late?" neg":"")+'">'+(s.late?money(s.late,2):"–")+'</td>'+
+      '<td class="r">'+(s.this?money(s.this,2):"–")+'</td><td class="r">'+(s.next?money(s.next,2):"–")+'</td>'+
+      '<td class="r">'+(s.later?money(s.later,2):"–")+'</td><td class="r">'+(s.none?money(s.none,2):"–")+'</td>'+
+      '<td class="r" style="font-weight:600">'+money(tot,2)+'</td><td class="r">'+s.n+'</td></tr>'; });
+  h+='<tr class="tot"><td>Total</td><td class="r'+(T.late?" neg":"")+'">'+money(T.late,2)+'</td><td class="r">'+money(T.this,2)+'</td>'+
+    '<td class="r">'+money(T.next,2)+'</td><td class="r">'+money(T.later,2)+'</td><td class="r">'+money(T.none,2)+'</td>'+
+    '<td class="r">'+money(T.late+T.this+T.next+T.later+T.none,2)+'</td><td class="r">'+T.n+'</td></tr></tbody></table></div></div>';
+  // invoices for the chosen month (plus anything overdue)
+  const inMonth=open.filter(c=>c.due_date&&monthKey(c.due_date)===payMonth&&c.due_date>=today);
+  const list=(payMonth===thisM?late:[]).concat(inMonth).sort((a,b)=>(a.due_date||"")<(b.due_date||"")?-1:1);
+  const rowsFor=(arr,showDue)=>{
+    let o=''; let last=null;
+    arr.forEach(c=>{ const k=(c.supplier||"—").trim();
+      if(k!==last){ const sub=arr.filter(x=>(x.supplier||"—").trim()===k);
+        o+='<tr><td colspan="6" style="background:var(--paper);font-weight:600;padding-top:10px">'+esc(k)+
+           ' <span class="ps" style="font-weight:400">· '+sub.length+' invoice'+(sub.length===1?"":"s")+'</span></td>'+
+           '<td class="r" colspan="2" style="background:var(--paper);font-weight:600;padding-top:10px">'+money(sum(sub),2)+'</td>'+
+           '<td style="background:var(--paper)"></td></tr>'; last=k; }
+      o+='<tr><td style="white-space:nowrap">'+(showDue?dueCell(c):
+          '<input class="in" type="date" style="width:140px;padding:4px 6px;font-size:12.5px" value="" data-act="pdue" data-id="'+c.id+'">')+'</td>'+
+        '<td style="white-space:nowrap">'+esc(c.invoice_ref||"–")+'<div class="ps">'+fmtDay(c.cost_date)+'</div></td>'+
+        '<td><span class="chip">'+esc(jobName(c.job_id))+'</span></td>'+
+        '<td style="max-width:240px"><div class="clamp">'+esc(c.description)+'</div></td>'+
+        '<td><select class="in" style="padding:4px 6px;font-size:12.5px" data-act="pstatus" data-id="'+c.id+'">'+
+        PAYS.map(s=>'<option'+(c.status===s?" selected":"")+'>'+esc(s)+'</option>').join("")+'</select></td>'+
+        '<td class="r">'+money(num(c.amount),2)+'</td>'+
+        '<td class="r" style="font-weight:600">'+money(owingOf(c),2)+'</td>'+
+        '<td style="white-space:nowrap"><button class="btn q sm" data-act="ppaid" data-id="'+c.id+'">Paid ✓</button></td>'+
+        '<td><button class="x" data-act="payedit" data-id="'+c.id+'">✎</button></td></tr>'; });
+    return o; };
+  const head='<thead><tr><th>Due</th><th>Invoice</th><th>Job</th><th>What for</th><th>Status</th><th class="r">Amount</th><th class="r">Owing</th><th></th><th></th></tr></thead>';
+  h+='<div class="panel"><div class="ph"><div><div class="pt">Invoices due '+monthName(payMonth)+
+    (payMonth===thisM&&late.length?' <span class="neg" style="font-size:12px">+ '+late.length+' overdue</span>':'')+'</div>'+
+    '<div class="ps">'+list.length+' invoice'+(list.length===1?"":"s")+' · '+money(sum(list),2)+' to pay</div></div>'+
+    '<div style="display:flex;gap:6px"><button class="btn q sm" data-act="paymon" data-n="-1">◀</button>'+
+    '<button class="btn q sm" data-act="paymon" data-n="0">This month</button>'+
+    '<button class="btn q sm" data-act="paymon" data-n="1">▶</button></div></div><div class="scroll"><table>'+head+'<tbody>'+
+    (list.length?rowsFor(list,true):'<tr><td colspan="9" class="empty">Nothing due in '+monthName(payMonth)+'.</td></tr>')+
+    '</tbody></table></div></div>';
+  if(none.length){
+    h+='<div class="panel"><div class="ph"><div><div class="pt">No due date yet</div>'+
+      '<div class="ps">'+none.length+' invoice'+(none.length===1?"":"s")+' · '+money(sum(none),2)+' · pick a date and it moves into the month above</div></div></div>'+
+      '<div class="scroll"><table>'+head+'<tbody>'+rowsFor(none,false)+'</tbody></table></div></div>';
+  }
+  // by job
+  const J={}; open.forEach(c=>{ J[c.job_id]=J[c.job_id]||{amt:0,n:0}; J[c.job_id].amt+=owingOf(c); J[c.job_id].n++; });
+  h+='<div class="panel"><div class="ph"><div><div class="pt">By project</div><div class="ps">Where the outstanding bills sit</div></div></div>'+
+    '<div class="scroll"><table><thead><tr><th>Job</th><th class="r">Outstanding</th><th class="r">Invoices</th></tr></thead><tbody>'+
+    Object.keys(J).sort((a,b)=>J[b].amt-J[a].amt).map(id=>'<tr><td style="font-weight:600">'+esc(jobName(id))+'</td>'+
+      '<td class="r">'+money(J[id].amt,2)+'</td><td class="r">'+J[id].n+'</td></tr>').join("")+
+    '</tbody></table></div></div>'+
+    '<div class="note"><div>Everything here is ex GST and comes from the cost log of every job. Marking an invoice paid here '+
+    'marks it paid on that job too. Invoices without a due date assume end of the month after the invoice date when they are added.</div></div>';
+  return h;
+}
+
 function viewClaims(m){
   const day=num(job.claim_day)||25,now=new Date(); now.setHours(0,0,0,0);
   let dd=new Date(now.getFullYear(),now.getMonth(),day); if(dd<now) dd.setMonth(dd.getMonth()+1);
@@ -2007,6 +2111,8 @@ function costForm(c){
     fld("Paid so far",'<input class="in" inputmode="decimal" id="f_paid" value="'+esc(f.paid)+'">')+
     (caps.costDue
       ? fld("Terms",'<select class="in" id="f_terms"><option value="">Set the date myself</option>'+
+          '<option value="eonm"'+(!c?" selected":"")+'>End of next month</option>'+
+          '<option value="eom">End of this month</option>'+
           [7,14,21,30,45,60].map(d=>'<option value="'+d+'"'+(num(f.terms_days)===d?" selected":"")+'>Net '+d+' days</option>').join("")+
           '</select>')+
         fld("Due date",'<input class="in" type="date" id="f_due" value="'+esc(f.due_date||"")+'">')
@@ -2365,17 +2471,26 @@ document.addEventListener("click",async ev=>{
   if(a==="alwdel"){ if(await db(sb.from("estimate_allowances").delete().eq("id",id))) await refresh(); return; }
   if(a==="costadd"){ openModal(costForm(null)); return; }
   if(a==="costedit"){ openModal(costForm(byId(D.costs,id))); return; }
+  if(a==="payedit"){ openModal(costForm(byId(pay.costs,id))); return; }
+  if(a==="paymon"){ const n=num(el.getAttribute("data-n"));
+    payMonth=n===0?monthKey(isoOf(new Date())):addMonths(payMonth,n); render(); return; }
+  if(a==="ppaid"){ const c=byId(pay.costs,id); if(!c) return;
+    if(!confirm("Mark "+c.supplier+" "+(c.invoice_ref||"")+" ("+money(num(c.amount),2)+") as paid in full?")) return;
+    if(await db(sb.from("costs").update({status:"Paid",paid:num(c.amount)}).eq("id",id))) await payReload(); return; }
   if(a==="costdel"){ if(!confirm("Delete this cost?")) return;
     if(await db(sb.from("costs").delete().eq("id",id))) await refresh(); return; }
   if(a==="costsave"){
     const g=x=>document.getElementById("f_"+x).value;
     if(!g("supplier").trim()||!num(g("amount"))) return alert("A supplier and an amount are needed.");
-    const rec={job_id:job.id,cost_date:g("date"),week_start:isoOf(mondayOf(g("date"))),
+    const rec={cost_date:g("date"),week_start:isoOf(mondayOf(g("date"))),
       area:g("area"),category:g("category"),supplier:g("supplier"),description:g("desc"),
       invoice_ref:g("ref"),amount:num(g("amount")),status:g("status"),paid:num(g("paid"))};
+    if(!id) rec.job_id=job.id;   // an edit keeps the job it belongs to, whichever tab it was opened from
     if(caps.costDue){
-      rec.terms_days=num(g("terms"))||null;
-      rec.due_date=g("due")||(num(g("terms"))?addDays(g("date"),num(g("terms"))):null);
+      const t=g("terms");
+      rec.terms_days=/^\d+$/.test(t)?num(t):null;
+      rec.due_date=g("due")||(t==="eom"?eom(g("date"),0):t==="eonm"?eom(g("date"),1):
+                   /^\d+$/.test(t)?addDays(g("date"),num(t)):null);
     }
     closeModal();
     if(await db(id?sb.from("costs").update(rec).eq("id",id)
@@ -2417,6 +2532,11 @@ document.addEventListener("change",async ev=>{
     D.tasks=D.tasks.map(x=>x.id===id?Object.assign({},x,patch):x); render();
     await db(sb.from("tasks").update(Object.assign({updated_by:me.id},patch)).eq("id",id)); return; }
   if(a==="cstatus"){ if(await db(sb.from("costs").update({status:v}).eq("id",id))) await refresh(); return; }
+  if(a==="pstatus"){ const c=byId(pay.costs,id)||{};
+    const patch=v==="Paid"?{status:v,paid:num(c.amount)}:{status:v};
+    if(await db(sb.from("costs").update(patch).eq("id",id))) await payReload(); return; }
+  if(a==="pdue"){ if(!v) return;
+    if(await db(sb.from("costs").update({due_date:v}).eq("id",id))) await payReload(); return; }
   if(a==="clstat"){ if(await db(sb.from("claims").update({status:v}).eq("id",id))) await refresh(); return; }
   if(a==="cw"){ const f=el.getAttribute("data-f"),val=(f==="rate")?num(v):v;
     const patch={}; patch[f]=val;
