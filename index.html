@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MJ GreenGuard — Jobs</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#16241D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GreenGuard">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{--ink:#16241D;--ink2:#3A4A41;--mute:#7B887F;--line:#DDE1D9;--paper:#F6F7F2;
 --panel:#fff;--hi:#C8E019;--pos:#2E6F4E;--neg:#A83A25;}
@@ -273,7 +279,7 @@ const JOB_KEY="mjgg:job";
 let D={tasks:[],comments:[],files:[],scope:[],moves:[],plans:[],costs:[],crew:[],sheets:[],claims:[],lines:[],
   clients:[],leads:[],ests:[],secs:[],items:[],allow:[],org:null,prices:[],measures:[]};
 let pickMode="week",claimAdj={},claimTo=null,pgQ="",costQ="",costCat="All",pickSection=null;
-let caps={costDue:true,prices:true,measures:true};   // what this database actually has
+let caps={costDue:true,prices:true,measures:true,siteops:true};   // what this database actually has
 let estId=null,printing=false,leadFilter="All",schedView="gantt";
 let gp=null;   // gantt PDF settings while the printable programme is on screen
 const DW=30;
@@ -377,6 +383,7 @@ async function probe(){
   caps.costDue  = await test("costs","due_date");
   caps.prices   = await test("price_items","id");
   caps.measures = await test("measures","id");
+  caps.siteops  = await test("site_diary","id");
 }
 async function loadAll(){
   const j=await sb.from("jobs").select("*").order("created_at");
@@ -423,6 +430,7 @@ async function loadAll(){
     D.scope=s.data||[];
   }
   lastSync=new Date();
+  await xLoad();
 }
 function watch(){
   sb.channel("live")
@@ -524,6 +532,12 @@ function render(){
       'untick <b>Headers and footers</b> to drop the date and the web address.</span></div>'+
       viewGantPdf()+'</div>'; return; }
   gpPageStyle(false);
+  if(xdoc){ $("#root").innerHTML='<div class="shell">'+
+      '<div class="noprint" style="padding:14px 0;display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button class="btn" data-act="xdocprint">Print or save as PDF</button>'+
+      '<button class="btn q" data-act="xdocclose">Back</button>'+
+      '<span class="ps" style="align-self:center">In the print box open <b>More settings</b>, tick <b>Background graphics</b> and untick <b>Headers and footers</b>.</span></div>'+
+      (xdoc==="maint"?xMaintDoc():xReportDoc())+'</div>'; setTimeout(xShowPhotos,0); return; }
   if(printing){ $("#root").innerHTML='<div class="shell">'+
       '<div class="noprint" style="padding:14px 0;display:flex;gap:8px">'+
       '<button class="btn" data-act="doprint">Print or save as PDF</button>'+
@@ -532,13 +546,13 @@ function render(){
       'untick <b>Headers and footers</b> — that removes the date and the file path.</span></div>'+
       docHtml()+'</div>'; return; }
   const tabs=admin()
-    ?[["week","This week"],["plan","Plan"],["sched","Schedule"],["money","Money"],
+    ?[["week","This week"],["plan","Plan"],["sched","Schedule"],["roster","Roster"],["diary","Diary"],["money","Money"],
       ["progress","Progress"]].concat(caps.measures?[["measure","Measure"]]:[])
-      .concat([["costs","Costs"],["pay","Payables"],["claims","Claims"],["crew","Crew"],
+      .concat([["costs","Costs"],["po","Orders"],["materials","Materials"],["pay","Payables"],["claims","Claims"],["crew","Crew"],
       ["leads","Leads"],["quotes","Quotes"]])
       .concat(caps.prices?[["prices","Price list"]]:[])
-      .concat([["clients","Clients"],["jobs","Jobs"],["biz","Business"],["check","Check"]])
-    :[["sched","Schedule"]];
+      .concat([["clients","Clients"],["jobs","Jobs"],["safety","Safety"],["report","Report"],["biz","Business"],["check","Check"]])
+    :[["today","Today"],["roster","Roster"],["sched","Schedule"],["diary","Diary"],["safety","Safety"]];
   if(!tabs.some(t=>t[0]===tab)) tab=tabs[0][0];
   const m=admin()?model():null;
   $("#root").innerHTML='<div class="shell"><div class="top">'+
@@ -560,18 +574,26 @@ function render(){
     (lastSync?" · updated "+lastSync.toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"}):"")+'</div></div>';
   $("#out").onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
   const v=$("#view");
-  if(!job&&tab!=="jobs"&&tab!=="clients"&&tab!=="leads"&&tab!=="quotes"){
+  if(!job&&tab!=="jobs"&&tab!=="clients"&&tab!=="leads"&&tab!=="quotes"&&tab!=="today"&&tab!=="roster"&&tab!=="diary"&&tab!=="safety"){
     v.innerHTML='<div class="panel"><div class="empty">No job open yet. '+
       'Go to <strong>Jobs</strong> and make one.</div></div>'; return; }
+  setTimeout(xShowPhotos,0);
   if(tab==="sched"){ v.innerHTML=viewSched(); setTimeout(showPhotos,0); }
-  else if(tab==="week") v.innerHTML=viewWeek();
+  else if(tab==="today") v.innerHTML=xViewToday();
+  else if(tab==="roster") v.innerHTML=xViewRoster();
+  else if(tab==="diary") v.innerHTML=xViewDiary();
+  else if(tab==="safety") v.innerHTML=xViewSafety();
+  else if(tab==="materials") v.innerHTML=xViewMaterials();
+  else if(tab==="po") v.innerHTML=xViewPO();
+  else if(tab==="report") v.innerHTML=xViewReport();
+  else if(tab==="week") v.innerHTML=viewWeek()+xShiftsPanel();
   else if(tab==="plan") v.innerHTML=viewPlan();
   else if(tab==="money") v.innerHTML=viewMoney(m);
   else if(tab==="progress") v.innerHTML=viewProgress(m);
   else if(tab==="measure") v.innerHTML=viewMeasure(m);
   else if(tab==="costs") v.innerHTML=viewCosts(m);
   else if(tab==="pay"){ v.innerHTML=viewPayables(); if(!pay) loadPayables(); }
-  else if(tab==="claims") v.innerHTML=viewClaims(m);
+  else if(tab==="claims") v.innerHTML=viewClaims(m)+xRetPanel();
   else if(tab==="leads") v.innerHTML=viewLeads();
   else if(tab==="quotes") v.innerHTML=estId?viewEstimate():viewQuotes();
   else if(tab==="prices") v.innerHTML=viewPrices();
@@ -1002,6 +1024,8 @@ async function runCheck(){
   checkResult=out; checking=false; render();
 }
 const FIXES={
+ siteops:{name:"Site tools (clock-in, roster, diary, safety, materials, orders, retention, maintenance)",
+   sql:"-- MJ GreenGuard platform \u2014 site operations add-on (3 Nov 2026)\n-- Adds tables only. Nothing existing is dropped, altered destructively or deleted.\n-- Run once in Supabase \u2192 SQL Editor. Safe to run again (every statement is \"if not exists\").\n\n-- who is this login on the crew list (each person links themselves once)\ncreate table if not exists crew_links (\n  user_id uuid primary key,\n  org_id uuid not null references orgs on delete cascade,\n  crew_id uuid not null references crew on delete cascade,\n  created_at timestamptz default now());\nalter table crew_links enable row level security;\ndrop policy if exists own_link on crew_links;\ncreate policy own_link on crew_links for all\n  using (org_id = my_org() and (user_id = auth.uid() or sees_money()))\n  with check (org_id = my_org() and (user_id = auth.uid() or sees_money()));\n\n-- crew names without rates, for people who do not see money\ncreate or replace view crew_public as\n  select id, org_id, name, role, active from crew where org_id = my_org();\ngrant select on crew_public to authenticated;\n\n-- day roster: who is on which job, with what plant\ncreate table if not exists rosters (\n  id uuid primary key default gen_random_uuid(),\n  org_id uuid not null references orgs on delete cascade,\n  job_id uuid not null references jobs on delete cascade,\n  roster_date date not null,\n  crew_ids uuid[] default '{}',\n  plant text, note text,\n  kind text default 'work',          -- work | maint\n  created_at timestamptz default now());\nalter table rosters enable row level security;\ndrop policy if exists org_read on rosters;\ncreate policy org_read on rosters for select using (org_id = my_org());\ndrop policy if exists money_write on rosters;\ncreate policy money_write on rosters for all\n  using (org_id = my_org() and sees_money())\n  with check (org_id = my_org() and sees_money());\n\n-- clock in / clock out with GPS\ncreate table if not exists shifts (\n  id uuid primary key default gen_random_uuid(),\n  org_id uuid not null references orgs on delete cascade,\n  job_id uuid not null references jobs on delete cascade,\n  crew_id uuid references crew on delete set null,\n  user_id uuid,\n  started_at timestamptz not null default now(),\n  ended_at timestamptz,\n  break_min int default 0,\n  hours numeric(6,2),\n  start_lat double precision, start_lng double precision, start_acc double precision,\n  end_lat double precision, end_lng double precision, end_acc double precision,\n  note text,\n  applied boolean default false,     -- pulled into the weekly timesheet\n  created_at timestamptz default now());\nalter table shifts enable row level security;\ndrop policy if exists org_read on shifts;\ncreate policy org_read on shifts for select using (org_id = my_org());\ndrop policy if exists own_or_money on shifts;\ncreate policy own_or_money on shifts for all\n  using (org_id = my_org() and (user_id = auth.uid() or sees_money()))\n  with check (org_id = my_org() and (user_id = auth.uid() or sees_money()));\n\n-- site diary, one entry per job per day\ncreate table if not exists site_diary (\n  id uuid primary key default gen_random_uuid(),\n  org_id uuid not null references orgs on delete cascade,\n  job_id uuid not null references jobs on delete cascade,\n  diary_date date not null default current_date,\n  weather text, on_site text, work text, deliveries text, issues text,\n  created_by uuid,\n  created_at timestamptz default now());\nalter table site_diary enable row level security;\ndrop policy if exists org_read on site_diary;\ncreate policy org_read on site_diary for select using (org_id = my_org());\ndrop policy if exists org_insert on site_diary;\ncreate policy org_insert on site_diary for insert with check (org_id = my_org());\ndrop policy if exists own_or_money_update on site_diary;\ncreate policy own_or_money_update on site_diary for update\n  using (org_id = my_org() and (created_by = auth.uid() or sees_money()));\ndrop policy if exists money_delete on site_diary;\ncreate policy money_delete on site_diary for delete using (org_id = my_org() and sees_money());\n\n-- safety records: SWMS, toolbox talks, inductions, inspections, incidents\ncreate table if not exists safety_records (\n  id uuid primary key default gen_random_uuid(),\n  org_id uuid not null references orgs on delete cascade,\n  job_id uuid not null references jobs on delete cascade,\n  kind text not null default 'Toolbox talk',\n  rec_date date not null default current_date,\n  title text, note text, signed text,\n  created_by uuid,\n  created_at timestamptz default now());\nalter table safety_records enable row level security;\ndrop policy if exists org_read on safety_records;\ncreate policy org_read on safety_records for select using (org_id = my_org());\ndrop policy if exists org_insert on safety_records;\ncreate policy org_insert on safety_records for insert with check (org_id = my_org());\ndrop policy if exists own_or_money_update on safety_records;\ncreate policy own_or_money_update on safety_records for update\n  using (org_id = my_org() and (created_by = auth.uid() or sees_money()));\ndrop policy if exists money_delete on safety_records;\ncreate policy money_delete on safety_records for delete using (org_id = my_org() and sees_money());\n\n-- photos on diary entries, safety records and clock-ins (stored in the site-files bucket)\ncreate table if not exists site_files (\n  id uuid primary key default gen_random_uuid(),\n  org_id uuid not null references orgs on delete cascade,\n  job_id uuid references jobs on delete cascade,\n  diary_id uuid references site_diary on delete cascade,\n  safety_id uuid references safety_records on delete cascade,\n  shift_id uuid references shifts on delete cascade,\n  path text not null,\n  uploaded_by uuid,\n  created_at timestamptz default now());\nalter table site_files enable row level security;\ndrop policy if exists org_read on site_files;\ncreate policy org_read on site_files for select using (org_id = my_org());\ndrop policy if exists org_insert on site_files;\ncreate policy org_insert on site_files for insert with check (org_id = my_org());\ndrop policy if exists money_delete on site_files;\ncreate policy money_delete on site_files for delete using (org_id = my_org() and sees_money());\n\n-- material and plant take-off vs ordered\ncreate table if not exists materials (\n  id uuid primary key default gen_random_uuid(),\n  org_id uuid not null references orgs on delete cascade,\n  job_id uuid not null references jobs on delete cascade,\n  kind text default 'Material',       -- Material | Plant\n  area text, name text not null, size text, unit text,\n  takeoff numeric(14,3) default 0,\n  waste_pct numeric(6,2) default 5,\n  note text,\n  scope_item_id uuid references scope_items on delete set null,\n  created_at timestamptz default now());\nalter table materials enable row level security;\ndrop policy if exists money_only on materials;\ncreate policy money_only on materials for all\n  using (org_id = my_org() and sees_money())\n  with check (org_id = my_org() and sees_money());\n\n-- purchase orders; lines are kept on the order as JSON [{desc,qty,unit,rate,material_id}]\ncreate table if not exists purchase_orders (\n  id uuid primary key default gen_random_uuid(),\n  org_id uuid not null references orgs on delete cascade,\n  job_id uuid not null references jobs on delete cascade,\n  po_no text, supplier text not null, area text,\n  order_date date default current_date,\n  delivery_date date,\n  status text default 'Ordered',      -- Ordered | Delivered | Cancelled\n  items jsonb default '[]',\n  total numeric(14,2) default 0,\n  note text,\n  delivered_on date,\n  cost_id uuid,                        -- the cost row written when delivered\n  created_at timestamptz default now());\nalter table purchase_orders enable row level security;\ndrop policy if exists money_only on purchase_orders;\ncreate policy money_only on purchase_orders for all\n  using (org_id = my_org() and sees_money())\n  with check (org_id = my_org() and sees_money());\n\n-- job extras: site location, retention / defects period, maintenance plan\nalter table jobs add column if not exists site_address text;\nalter table jobs add column if not exists site_lat double precision;\nalter table jobs add column if not exists site_lng double precision;\nalter table jobs add column if not exists pc_date date;\nalter table jobs add column if not exists dlp_weeks int default 52;\nalter table jobs add column if not exists retention_pct numeric(5,2) default 5;\nalter table jobs add column if not exists retention_cap_pct numeric(5,2) default 5;\nalter table jobs add column if not exists ret_release1 numeric(14,2) default 0;\nalter table jobs add column if not exists ret_release1_on date;\nalter table jobs add column if not exists ret_release2 numeric(14,2) default 0;\nalter table jobs add column if not exists ret_release2_on date;\nalter table jobs add column if not exists ret_note text;\nalter table jobs add column if not exists maint_start date;\nalter table jobs add column if not exists maint_weeks int;\nalter table jobs add column if not exists maint_freq text;\nalter table jobs add column if not exists maint_scope text;\nalter table jobs add column if not exists site_notes text;\n\n-- retention held per claim (entered when the claim is certified)\nalter table claims add column if not exists retention numeric(14,2) default 0;\n\nnotify pgrst, 'reload schema';\n"},
  costDue:{name:"Invoice due dates on costs",
    sql:"alter table costs add column if not exists due_date date;\n"+
        "alter table costs add column if not exists terms_days int;\n"+
@@ -1712,19 +1736,20 @@ function viewClaims(m){
   if(!D.claims.length) h+='<div class="empty">No claims raised yet.</div>';
   else{
     h+='<div class="scroll"><table><thead><tr><th>Claim</th><th>Period</th><th class="r">Claimed</th>'+
-      '<th class="r">Certified</th><th class="r">Received</th><th class="r">Outstanding</th><th>Status</th><th></th></tr></thead><tbody>';
+      '<th class="r">Certified</th><th class="r">Received</th>'+(caps.siteops?'<th class="r">Retention</th>':'')+'<th class="r">Outstanding</th><th>Status</th><th></th></tr></thead><tbody>';
     D.claims.forEach(c=>h+='<tr><td style="font-weight:600">'+esc(c.no)+'<div class="ps">'+
       D.lines.filter(l=>l.claim_id===c.id).length+' lines</div></td>'+
       '<td style="white-space:nowrap">'+(c.period_from?fmtDay(c.period_from)+" – ":"")+fmtDay(c.period_to)+'</td>'+
       '<td class="r" style="font-weight:600">'+money(claimValue(c),2)+'</td>'+
       '<td class="r"><input class="in qty" inputmode="decimal" placeholder="same" value="'+esc(c.certified==null?"":c.certified)+'" data-act="cert" data-id="'+c.id+'"></td>'+
       '<td class="r"><input class="in qty" inputmode="decimal" value="'+esc(c.received)+'" data-act="recd" data-id="'+c.id+'"></td>'+
+      (caps.siteops?'<td class="r">'+xRetRow(c)+'</td>':'')+
       '<td class="r '+(claimOut(c)>0?"neg":"pos")+'" style="font-weight:600">'+money(claimOut(c),2)+'</td>'+
       '<td><select class="in" style="padding:4px 6px;font-size:12.5px" data-act="clstat" data-id="'+c.id+'">'+
       CSTAT.map(s=>'<option'+(c.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select></td>'+
       '<td><button class="x" data-act="cldel" data-id="'+c.id+'">✕</button></td></tr>');
     h+='<tr class="tot"><td colspan="2">Totals</td><td class="r">'+money(m.claimed,2)+'</td><td></td>'+
-      '<td class="r">'+money(m.received,2)+'</td><td class="r">'+money(m.owed,2)+'</td><td colspan="2"></td></tr></tbody></table></div>';
+      '<td class="r">'+money(m.received,2)+'</td>'+(caps.siteops?'<td class="r">'+money(D.claims.reduce((a,c)=>a+num(c.retention),0),2)+'</td>':'')+'<td class="r">'+money(m.owed,2)+'</td><td colspan="2"></td></tr></tbody></table></div>';
   }
   return h+'</div>';
 }
@@ -2668,6 +2693,592 @@ document.addEventListener("blur",async ev=>{
   else if(a==="pgq"||a==="costq"||a==="cadj") render();
 },true);
 
+/* ================= site operations add-on (3 Nov 2026) =================
+   Today / clock-in, roster, site diary + photos, safety, materials vs orders,
+   purchase orders, retention register, maintenance visits, weekly report.
+   Every data-act here starts with "x" so nothing collides with the rest of the app. */
+let X={rosters:[],shifts:[],diary:[],files:[],safety:[],materials:[],po:[],links:[],crewPub:[],
+  rday:null,dweek:null,rweek:null,myCrew:null,sig:{},loaded:false,gps:null};
+let xdoc=null;   // printable document on screen (weekly report, completion report)
+const XKIND=["SWMS","Toolbox talk","Site induction","Site inspection","Incident / near miss"];
+const XWEATHER=["Fine","Overcast","Showers","Rain – lost time","Wet site","Windy","Hot >35°C"];
+const XMAT=["Material","Plant"];
+const XPO=["Ordered","Delivered","Cancelled"];
+const xToday=()=>isoOf(new Date());
+const xCrewList=()=>admin()?D.crew:X.crewPub;
+const xCrewName=id=>{const c=byId(xCrewList(),id);return c?c.name:"?";};
+const xJobName=id=>{const j=byId(jobs,id);return j?j.name:"?";};
+const xDays=d=>{ if(!d) return null; const p=d.split("-").map(Number),t=xToday().split("-").map(Number);
+  return Math.round((new Date(p[0],p[1]-1,p[2])-new Date(t[0],t[1]-1,t[2]))/86400000); };
+const xDist=(a,b,c,d)=>{ if([a,b,c,d].some(v=>v==null)) return null; const R=6371000,r=x=>x*Math.PI/180;
+  const h=Math.sin(r(c-a)/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2; return Math.round(2*R*Math.asin(Math.sqrt(h))); };
+const xTime=t=>t?new Date(t).toLocaleTimeString("en-AU",{hour:"numeric",minute:"2-digit"}):"";
+const xMap=(la,ln)=>la!=null?'<a href="https://maps.google.com/?q='+la+','+ln+'" target="_blank" rel="noopener" class="ps">map</a>':"";
+function xGps(){ return new Promise(res=>{ if(!navigator.geolocation) return res(null);
+  navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy)}),
+    ()=>res(null),{enableHighAccuracy:true,timeout:8000,maximumAge:60000}); }); }
+
+async function xLoad(){
+  if(!caps.siteops){ X.loaded=true; return; }
+  const q=[sb.from("rosters").select("*").gte("roster_date",addDays(xToday(),-120)),
+    sb.from("shifts").select("*").gte("started_at",new Date(Date.now()-120*86400000).toISOString()),
+    sb.from("site_diary").select("*").order("diary_date",{ascending:false}),
+    sb.from("site_files").select("*").order("created_at"),
+    sb.from("safety_records").select("*").order("rec_date",{ascending:false}),
+    sb.from("crew_links").select("*")];
+  if(admin()) q.push(sb.from("materials").select("*").order("name"),sb.from("purchase_orders").select("*").order("order_date",{ascending:false}));
+  else q.push(sb.from("crew_public").select("*"));
+  const r=await Promise.all(q);
+  X.rosters=r[0].data||[]; X.shifts=r[1].data||[]; X.diary=r[2].data||[]; X.files=r[3].data||[];
+  X.safety=r[4].data||[]; X.links=r[5].data||[];
+  if(admin()){ X.materials=r[6].data||[]; X.po=r[7].data||[]; X.crewPub=D.crew; }
+  else X.crewPub=r[6].data||[];
+  const ln=X.links.filter(l=>l.user_id===me.id)[0]; X.myCrew=ln?ln.crew_id:null;
+  if(!X.rday) X.rday=isoOf(mondayOf(new Date()));
+  if(!X.dweek) X.dweek=isoOf(mondayOf(new Date()));
+  if(!X.rweek) X.rweek=isoOf(mondayOf(new Date()));
+  X.loaded=true;
+}
+async function xShowPhotos(){
+  const els=document.querySelectorAll("img.xph[data-path]");
+  for(const im of els){ if(X.sig[im.dataset.path]){ im.src=X.sig[im.dataset.path]; continue; }
+    const {data}=await sb.storage.from("site-files").createSignedUrl(im.dataset.path,3600);
+    if(data&&data.signedUrl){ X.sig[im.dataset.path]=data.signedUrl; im.src=data.signedUrl; } }
+}
+const xPhotos=(files)=>files.length?'<div class="photos">'+files.map(f=>'<a href="#" data-act="xphoto" data-path="'+esc(f.path)+'"><img class="xph" data-path="'+esc(f.path)+'" alt=""></a>').join("")+'</div>':"";
+function xUpload(file,ownerCol,ownerId){ // resize then put in the site-files bucket, row in site_files
+  return new Promise(resolve=>{ const rd=new FileReader(),img=new Image();
+    rd.onload=()=>{ img.onload=()=>{ const max=1400,sc=Math.min(max/img.width,max/img.height,1);
+      const cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      cv.toBlob(async b=>{ const path=prof.org_id+"/x/"+ownerId+"/"+Date.now()+Math.random().toString(36).slice(2,6)+".jpg";
+        const up=await sb.storage.from("site-files").upload(path,b,{contentType:"image/jpeg"});
+        if(up.error){ alert("Photo upload failed: "+up.error.message); return resolve(false); }
+        const row={org_id:prof.org_id,job_id:job?job.id:null,path:path,uploaded_by:me.id}; row[ownerCol]=ownerId;
+        resolve(await db(sb.from("site_files").insert(row))); },"image/jpeg",0.75); };
+      img.onerror=()=>resolve(false); img.src=rd.result; };
+    rd.readAsDataURL(file); });
+}
+async function xUploadAll(inputId,ownerCol,ownerId){ const el=document.getElementById(inputId); if(!el||!el.files) return;
+  for(const f of Array.from(el.files)) await xUpload(f,ownerCol,ownerId); }
+const xBtns=(saveAct,id,delAct)=>'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">'+
+  (delAct&&id?'<button class="btn q" data-act="'+delAct+'" data-id="'+id+'" style="margin-right:auto">Delete</button>':'')+
+  '<button class="btn q" data-act="close">Cancel</button><button class="btn" data-act="'+saveAct+'" data-id="'+(id||"")+'">Save</button></div>';
+const xHead=(t)=>'<div class="ph"><div class="pt">'+t+'</div><button class="x" data-act="close">✕</button></div><div style="padding:14px">';
+const xJobSel=(id,sel)=>'<select class="in" id="'+id+'">'+jobs.filter(j=>j.status==="Active"||j.id===sel).map(j=>'<option value="'+j.id+'"'+(j.id===sel?" selected":"")+'>'+esc(j.name)+'</option>').join("")+'</select>';
+const xAreaSel=(id,sel)=>'<select class="in" id="'+id+'"><option value="">—</option>'+AREAS.map(a=>'<option'+(a===sel?" selected":"")+'>'+esc(a)+'</option>').join("")+'</select>';
+const xCrewChips=(name,sel)=>'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">'+xCrewList().filter(c=>c.active!==false).map(c=>
+  '<label class="pctbtn'+((sel||[]).indexOf(c.id)>=0?" on":"")+'" style="cursor:pointer"><input type="checkbox" name="'+name+'" value="'+c.id+'"'+((sel||[]).indexOf(c.id)>=0?" checked":"")+' style="display:none" data-act="xchip">'+esc(c.name)+'</label>').join("")+'</div>';
+const xChecked=name=>Array.from(document.querySelectorAll('input[name="'+name+'"]:checked')).map(e=>e.value);
+const xSetup=()=>'<div class="panel"><div class="empty">Site tools are not switched on in this database yet. '+
+  (admin()?'Open <b>Check</b>, copy the <b>Site tools</b> SQL and run it once in Supabase.':'Ask Matt to switch them on.')+'</div></div>';
+
+/* ---------- Today (crew) ---------- */
+function xViewToday(){
+  if(!caps.siteops) return xSetup();
+  const today=xToday(), me2=X.myCrew?byId(xCrewList(),X.myCrew):null;
+  if(!me2) return '<div class="panel"><div class="ph"><div class="pt">Who are you?</div></div><div style="padding:14px">'+
+    '<div class="ps" style="margin-bottom:8px">Pick your name once. Your clock-ins and diary notes go under it.</div>'+
+    xCrewList().filter(c=>c.active!==false).map(c=>'<button class="btn q" style="margin:0 6px 6px 0" data-act="xlink" data-id="'+c.id+'">'+esc(c.name)+'</button>').join("")+
+    (xCrewList().length?"":'<div class="empty">No crew set up yet.</div>')+'</div></div>';
+  const mine=X.rosters.filter(r=>r.roster_date===today&&(r.crew_ids||[]).indexOf(X.myCrew)>=0);
+  const open=X.shifts.filter(s=>s.crew_id===X.myCrew&&!s.ended_at)[0];
+  const wk=isoOf(mondayOf(new Date())), myWk=X.shifts.filter(s=>s.crew_id===X.myCrew&&s.ended_at&&isoOf(new Date(s.started_at))>=wk);
+  let h='<div class="panel"><div class="ph"><div><div class="pt">'+new Date().toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"})+'</div>'+
+    '<div class="ps">'+esc(me2.name)+' · <a href="#" data-act="xunlink">not you?</a></div></div></div>';
+  if(open){ const j=byId(jobs,open.job_id);
+    h+='<div style="padding:14px;background:#FCFEEF;border-bottom:1px solid var(--line)"><div style="font-weight:600">On the clock at '+esc(j?j.name:"?")+
+      '</div><div class="ps">since '+xTime(open.started_at)+(open.start_acc?' · location recorded':'')+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn hi" data-act="xendshift" data-id="'+open.id+'">End shift</button>'+
+      '<label class="btn q" style="margin:0">📷 Photo<input type="file" accept="image/*" capture="environment" multiple style="display:none" data-act="xquickphoto" data-id="'+open.job_id+'"></label>'+
+      '<button class="btn q" data-act="xdiaryadd" data-job="'+open.job_id+'">Diary note</button></div></div>'; }
+  h+='<div style="padding:14px"><div class="pt" style="margin-bottom:8px">Today</div>';
+  if(!mine.length) h+='<div class="ps">Nothing rostered for you today.'+(open?'':' Start a shift on any job below.')+'</div>';
+  mine.forEach(r=>{ const j=byId(jobs,r.job_id)||{};
+    h+='<div class="task" style="border:1px solid var(--line);border-radius:3px;margin-bottom:8px"><div class="tname">'+esc(j.name||"?")+'</div>'+
+      '<div class="tmeta">'+esc(j.site_address||"")+(r.plant?' · 🚜 '+esc(r.plant):'')+'</div>'+
+      (r.note?'<div style="margin-top:4px">📌 '+esc(r.note)+'</div>':'')+
+      '<div class="ps" style="margin-top:4px">With: '+(r.crew_ids||[]).filter(c=>c!==X.myCrew).map(xCrewName).join(", ")+'</div>'+
+      (j.site_notes?'<div class="ps" style="margin-top:4px;white-space:pre-wrap">'+esc(j.site_notes)+'</div>':'')+
+      '<div class="pctrow">'+(open?'':'<button class="btn hi sm" data-act="xstartshift" data-id="'+r.job_id+'">Start shift</button>')+
+      '<label class="btn q sm" style="margin:0">📷 Photo<input type="file" accept="image/*" capture="environment" multiple style="display:none" data-act="xquickphoto" data-id="'+r.job_id+'"></label>'+
+      '<button class="btn q sm" data-act="xdiaryadd" data-job="'+r.job_id+'">Diary note</button></div></div>'; });
+  if(!open&&!mine.length) h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'+jobs.filter(j=>j.status==="Active").map(j=>
+    '<button class="btn q sm" data-act="xstartshift" data-id="'+j.id+'">Start at '+esc(j.name)+'</button>').join("")+'</div>';
+  h+='</div></div><div class="panel"><div class="ph"><div><div class="pt">This week</div><div class="ps">'+
+    (Math.round(myWk.reduce((a,s)=>a+num(s.hours),0)*10)/10)+' h on the clock</div></div></div>';
+  if(!myWk.length) h+='<div class="empty">No shifts this week yet.</div>';
+  else h+='<div class="scroll"><table><thead><tr><th>Day</th><th>Job</th><th>In</th><th>Out</th><th class="r">Hours</th><th>Note</th></tr></thead><tbody>'+
+    myWk.map(s=>'<tr><td>'+fmtDay(isoOf(new Date(s.started_at)))+'</td><td>'+esc(xJobName(s.job_id))+'</td><td>'+xTime(s.started_at)+'</td><td>'+xTime(s.ended_at)+'</td><td class="r">'+num(s.hours)+'</td><td>'+esc(s.note||"")+'</td></tr>').join("")+'</tbody></table></div>';
+  return h+'</div>';
+}
+function xEndShiftForm(s){
+  const hrs=Math.max(0,(Date.now()-new Date(s.started_at))/36e5);
+  return xHead("End shift")+'<div class="ps">Started '+xTime(s.started_at)+' · '+(Math.round(hrs*10)/10)+' h so far</div>'+
+    '<div class="grid2">'+fld("Break (minutes)",'<input class="in" inputmode="numeric" id="xs_brk" value="30">')+
+    fld("Plant used",'<input class="in" id="xs_plant" placeholder="RT-60, excavator">')+'</div>'+
+    fld("What did you do today?",'<textarea class="in" id="xs_note" rows="3"></textarea>')+
+    '<div class="ps" style="margin-top:8px">Your location is recorded with the clock-off.</div>'+xBtns("xendsave",s.id);
+}
+
+/* ---------- Roster (everyone sees, admin edits) ---------- */
+function xViewRoster(){
+  if(!caps.siteops) return xSetup();
+  const ws=X.rday, days=[0,1,2,3,4,5,6].map(i=>addDays(ws,i)), today=xToday();
+  let h='<div class="panel"><div class="ph"><div style="display:flex;align-items:center;gap:8px">'+
+    '<button class="x" data-act="xrwk" data-d="-7">‹</button><div><div class="pt">Roster · '+fmtWeek(ws)+'</div>'+
+    '<div class="ps">Who is where, with what plant. Deliveries and maintenance visits show here too.</div></div>'+
+    '<button class="x" data-act="xrwk" data-d="7">›</button></div>'+
+    '<div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn q" data-act="xrwk" data-d="0">This week</button>'+
+    (admin()?'<button class="btn hi" data-act="xrosteradd" data-date="'+today+'">+ Roster</button>':'')+'</div></div>'+
+    '<div class="scroll"><div style="display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:1px;background:var(--line);min-width:1050px">';
+  days.forEach(d=>{ const rs=X.rosters.filter(r=>r.roster_date===d);
+    const pos=admin()?X.po.filter(p=>p.delivery_date===d&&p.status==="Ordered"):[];
+    h+='<div style="background:'+(d===today?"#FCFEEF":"#fff")+';padding:8px;min-height:110px"><div class="ps" style="font-weight:600">'+
+      DAYS[days.indexOf(d)]+' <span style="color:var(--ink);font-size:14px">'+d.slice(8)+'</span></div>';
+    rs.forEach(r=>{ h+='<div style="margin-top:6px;padding:6px 8px;border-radius:3px;background:'+(r.kind==="maint"?"var(--paper)":"#EAF3E5")+';font-size:12.5px;cursor:pointer" data-act="'+(admin()?"xrosteredit":"")+'" data-id="'+r.id+'">'+
+      '<div style="font-weight:600">'+(r.kind==="maint"?"🌱 ":"")+esc(xJobName(r.job_id))+'</div><div class="ps">'+((r.crew_ids||[]).map(xCrewName).join(", ")||(r.kind==="maint"?"Maintenance visit":"No crew"))+
+      (r.plant?' · '+esc(r.plant):'')+(r.note?' · '+esc(r.note):'')+'</div></div>'; });
+    pos.forEach(p=>{ h+='<div style="margin-top:6px;padding:6px 8px;border:1px dashed var(--pos);border-radius:3px;font-size:12.5px;cursor:pointer" data-act="xpoedit" data-id="'+p.id+'"><div style="font-weight:600">🚚 '+esc(p.supplier)+'</div><div class="ps">'+esc(xJobName(p.job_id))+(p.note?' · '+esc(p.note):'')+'</div></div>'; });
+    if(admin()) h+='<button class="btn q sm" style="margin-top:6px;width:100%;border-style:dashed" data-act="xrosteradd" data-date="'+d+'">+</button>';
+    h+='</div>'; });
+  h+='</div></div></div>';
+  if(admin()) h+=xMaintPanel();
+  return h;
+}
+function xRosterForm(r,date){
+  const f=r||{roster_date:date||xToday(),job_id:job?job.id:(jobs[0]||{}).id,crew_ids:[],plant:"",note:"",kind:"work"};
+  return xHead(r?"Edit roster":"Roster crew")+'<div class="grid2">'+
+    fld("Date",'<input class="in" type="date" id="xr_date" value="'+esc(f.roster_date)+'">')+
+    fld("Job",xJobSel("xr_job",f.job_id))+'</div>'+
+    fld("Crew",xCrewChips("xr_crew",f.crew_ids))+
+    '<div class="grid2">'+fld("Plant",'<input class="in" id="xr_plant" value="'+esc(f.plant||"")+'" placeholder="RT-60, 2.5t excavator, tipper">')+
+    fld("Note",'<input class="in" id="xr_note" value="'+esc(f.note||"")+'" placeholder="Turf delivery 7am">')+'</div>'+
+    (r?'':fld("Repeat",'<select class="in" id="xr_rep"><option value="1">This day only</option><option value="5">Mon–Fri of that week</option></select>'))+
+    xBtns("xrostersave",r?r.id:"","xrosterdel");
+}
+
+/* ---------- Site diary ---------- */
+function xDiaryCard(d,showJob){
+  const files=X.files.filter(f=>f.diary_id===d.id);
+  const mayEdit=admin()||d.created_by===me.id;
+  return '<div class="task"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><b>'+fmtDay(d.diary_date)+'</b> <span class="ps">'+esc(d.weather||"")+
+    (d.on_site?' · '+esc(d.on_site):'')+(showJob?' · '+esc(xJobName(d.job_id)):'')+'</span></div>'+
+    (mayEdit?'<button class="btn q sm" data-act="xdiaryedit" data-id="'+d.id+'">Edit</button>':'')+'</div>'+
+    (d.work?'<div style="margin-top:6px;white-space:pre-wrap">'+esc(d.work)+'</div>':'')+
+    (d.deliveries?'<div class="ps" style="margin-top:6px"><b>Deliveries / plant:</b> '+esc(d.deliveries)+'</div>':'')+
+    (d.issues?'<div style="margin-top:6px;color:var(--neg)"><b>Issues / instructions:</b> '+esc(d.issues)+'</div>':'')+xPhotos(files)+'</div>';
+}
+function xViewDiary(){
+  if(!caps.siteops) return xSetup();
+  const ws=X.dweek, we=addDays(ws,6);
+  const rows=X.diary.filter(d=>d.diary_date>=ws&&d.diary_date<=we&&(!job||d.job_id===job.id));
+  let h='<div class="panel"><div class="ph"><div style="display:flex;align-items:center;gap:8px"><button class="x" data-act="xdwk" data-d="-7">‹</button>'+
+    '<div><div class="pt">Site diary · '+fmtWeek(ws)+'</div><div class="ps">'+(job?esc(job.name)+' · ':'')+'one entry per day: weather, who was there, what got done, deliveries, issues, photos</div></div>'+
+    '<button class="x" data-act="xdwk" data-d="7">›</button></div><div style="display:flex;gap:7px"><button class="btn q" data-act="xdwk" data-d="0">This week</button>'+
+    '<button class="btn hi" data-act="xdiaryadd" data-job="'+(job?job.id:"")+'">+ Today’s entry</button></div></div>';
+  if(!rows.length) h+='<div class="empty">No entries this week. The diary is your record when a builder disputes delays, wet days or instructions.</div>';
+  else rows.forEach(d=>h+=xDiaryCard(d,!job));
+  return h+'</div>';
+}
+function xDiaryForm(d,jobId){
+  const jid=d?d.job_id:(jobId||(job?job.id:(jobs[0]||{}).id));
+  const onSite=d?d.on_site:X.rosters.filter(r=>r.roster_date===xToday()&&r.job_id===jid).map(r=>(r.crew_ids||[]).map(xCrewName).join(", ")).join(", ");
+  const f=d||{diary_date:xToday(),weather:"Fine",on_site:onSite,work:"",deliveries:"",issues:""};
+  return xHead(d?"Edit diary entry":"Site diary entry")+'<div class="grid2">'+
+    fld("Date",'<input class="in" type="date" id="xd_date" value="'+esc(f.diary_date)+'">')+fld("Job",xJobSel("xd_job",jid))+
+    fld("Weather",'<select class="in" id="xd_weather">'+XWEATHER.map(w=>'<option'+(f.weather===w?" selected":"")+'>'+w+'</option>').join("")+'</select>')+
+    fld("On site",'<input class="in" id="xd_onsite" value="'+esc(f.on_site||"")+'" placeholder="Names, subbies">')+'</div>'+
+    fld("Work done",'<textarea class="in" id="xd_work" rows="3">'+esc(f.work||"")+'</textarea>')+
+    fld("Deliveries / plant on site",'<textarea class="in" id="xd_deliv" rows="2">'+esc(f.deliveries||"")+'</textarea>')+
+    fld("Issues, delays, instructions from the builder",'<textarea class="in" id="xd_issues" rows="2">'+esc(f.issues||"")+'</textarea>')+
+    fld("Photos",'<input class="in" type="file" id="xd_files" accept="image/*" multiple capture="environment">')+
+    xBtns("xdiarysave",d?d.id:"",admin()?"xdiarydel":null);
+}
+
+/* ---------- Safety ---------- */
+function xViewSafety(){
+  if(!caps.siteops) return xSetup();
+  const rows=X.safety.filter(s=>!job||s.job_id===job.id);
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Safety</div><div class="ps">SWMS, toolbox talks, inductions, inspections, incidents'+(job?' · '+esc(job.name):'')+'. Photograph the signed sheet and attach it.</div></div>'+
+    '<button class="btn hi" data-act="xsafeadd">+ Add record</button></div>';
+  if(!rows.length) h+='<div class="empty">No safety records yet.</div>';
+  rows.forEach(s=>{ const files=X.files.filter(f=>f.safety_id===s.id);
+    h+='<div class="task"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><b>'+fmtDay(s.rec_date)+'</b> <span class="chip" style="'+(s.kind.indexOf("Incident")===0?"color:var(--neg)":"")+'">'+esc(s.kind)+'</span> '+esc(s.title||"")+(job?'':' <span class="ps">· '+esc(xJobName(s.job_id))+'</span>')+'</div>'+
+      ((admin()||s.created_by===me.id)?'<button class="btn q sm" data-act="xsafeedit" data-id="'+s.id+'">Edit</button>':'')+'</div>'+
+      (s.note?'<div style="margin-top:6px;white-space:pre-wrap">'+esc(s.note)+'</div>':'')+(s.signed?'<div class="ps" style="margin-top:6px"><b>Attended / signed:</b> '+esc(s.signed)+'</div>':'')+xPhotos(files)+'</div>'; });
+  return h+'</div>';
+}
+function xSafeForm(s){
+  const jid=s?s.job_id:(job?job.id:(jobs[0]||{}).id);
+  const onSite=X.rosters.filter(r=>r.roster_date===xToday()&&r.job_id===jid).map(r=>(r.crew_ids||[]).map(xCrewName).join(", ")).join(", ");
+  const f=s||{kind:"Toolbox talk",rec_date:xToday(),title:"",note:"",signed:onSite};
+  return xHead(s?"Edit safety record":"Safety record")+'<div class="grid2">'+
+    fld("Type",'<select class="in" id="xf_kind">'+XKIND.map(k=>'<option'+(f.kind===k?" selected":"")+'>'+k+'</option>').join("")+'</select>')+
+    fld("Date",'<input class="in" type="date" id="xf_date" value="'+esc(f.rec_date)+'">')+fld("Job",xJobSel("xf_job",jid))+
+    fld("Title / topic",'<input class="in" id="xf_title" value="'+esc(f.title||"")+'" placeholder="SWMS – excavation near services">')+'</div>'+
+    fld("Notes (what was covered, actions)",'<textarea class="in" id="xf_note" rows="3">'+esc(f.note||"")+'</textarea>')+
+    fld("Attended / signed by",'<input class="in" id="xf_signed" value="'+esc(f.signed||"")+'">')+
+    fld("Photos of the signed sheet",'<input class="in" type="file" id="xf_files" accept="image/*" multiple capture="environment">')+
+    xBtns("xsafesave",s?s.id:"",admin()?"xsafedel":null);
+}
+
+/* ---------- Materials take-off vs ordered ---------- */
+const xMatLabel=m=>m.name+(m.size?" ("+m.size+")":"");
+function xMatQty(m){ let ordered=0,delivered=0;
+  X.po.forEach(p=>{ if(p.status==="Cancelled"||p.job_id!==m.job_id) return; (p.items||[]).forEach(i=>{ if(i.material_id===m.id){ ordered+=num(i.qty); if(p.status==="Delivered") delivered+=num(i.qty); } }); });
+  const required=Math.ceil(num(m.takeoff)*(1+num(m.waste_pct)/100)*100)/100;
+  return {required:required,ordered:ordered,delivered:delivered,remaining:Math.max(0,Math.round((required-ordered)*100)/100)};
+}
+function xViewMaterials(){
+  if(!caps.siteops) return xSetup();
+  const rows=X.materials.filter(m=>m.job_id===job.id);
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Materials & plants</div><div class="ps">Take-off × waste = what the job needs. Every order line you link counts as ordered, so you see what is still to order.</div></div>'+
+    '<div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn q" data-act="xmatscope">From scope</button><button class="btn q" data-act="xmatimport">Import plant schedule</button><button class="btn hi" data-act="xmatadd">+ Add</button></div></div>';
+  if(!rows.length) h+='<div class="empty">No take-off items yet. Pull them from the scope lines, import the plant schedule, or add by hand.</div>';
+  XMAT.forEach(k=>{ const rs=rows.filter(m=>(m.kind||"Material")===k); if(!rs.length) return;
+    h+='<div class="ph" style="border-top:1px solid var(--line)"><div class="pt">'+k+'s</div></div><div class="scroll"><table><thead><tr><th>Item</th><th>Area</th><th class="r">Take-off</th><th class="r">Waste</th><th class="r">Required</th><th class="r">Ordered</th><th class="r">Delivered</th><th class="r">To order</th><th style="width:18%"></th><th></th></tr></thead><tbody>';
+    rs.forEach(m=>{ const q=xMatQty(m),over=q.ordered>q.required*1.001,pct=q.required?Math.min(100,q.ordered/q.required*100):0;
+      h+='<tr><td><div style="font-weight:600">'+esc(m.name)+'</div><div class="ps">'+esc(m.size||"")+(m.note?' · '+esc(m.note):'')+'</div></td><td>'+esc(m.area||"")+'</td>'+
+        '<td class="r">'+num(m.takeoff)+' '+esc(m.unit||"")+'</td><td class="r">'+num(m.waste_pct)+'%</td><td class="r">'+q.required+'</td>'+
+        '<td class="r'+(over?" neg":"")+'">'+q.ordered+'</td><td class="r">'+q.delivered+'</td><td class="r" style="font-weight:600;'+(q.remaining?'':'color:var(--pos)')+'">'+q.remaining+'</td>'+
+        '<td><div class="bar"><i style="width:'+pct+'%;'+(over?'background:var(--neg)':'')+'"></i></div></td>'+
+        '<td style="white-space:nowrap">'+(q.remaining>0?'<button class="btn q sm" data-act="xpoadd" data-mat="'+m.id+'">Order</button> ':'')+'<button class="x" data-act="xmatedit" data-id="'+m.id+'">✎</button></td></tr>'; });
+    h+='</tbody></table></div>'; });
+  return h+'</div>';
+}
+function xMatForm(m,preset){
+  const f=m||Object.assign({kind:"Material",area:"",name:"",size:"",unit:"",takeoff:"",waste_pct:5,note:""},preset||{});
+  return xHead(m?"Edit item":"Add material / plant")+'<div class="grid2">'+
+    fld("Type",'<select class="in" id="xm_kind">'+XMAT.map(k=>'<option'+(f.kind===k?" selected":"")+'>'+k+'</option>').join("")+'</select>')+fld("Area",xAreaSel("xm_area",f.area))+'</div>'+
+    fld("Item / species",'<input class="in" id="xm_name" value="'+esc(f.name)+'" placeholder="Lomandra Tanika / Sir Walter turf / Garden mix">')+
+    '<div class="grid2">'+fld("Pot size / grade",'<input class="in" id="xm_size" value="'+esc(f.size||"")+'" placeholder="140mm, 45L, 75mm mulch">')+
+    fld("Unit",'<input class="in" id="xm_unit" value="'+esc(f.unit||"")+'" placeholder="ea, m2, m3, t">')+
+    fld("Take-off qty",'<input class="in" inputmode="decimal" id="xm_takeoff" value="'+esc(f.takeoff)+'">')+
+    fld("Waste / contingency %",'<input class="in" inputmode="decimal" id="xm_waste" value="'+esc(f.waste_pct)+'">')+'</div>'+
+    fld("Note (drawing ref, density)",'<input class="in" id="xm_note" value="'+esc(f.note||"")+'" placeholder="LP-02, 6/m²">')+
+    xBtns("xmatsave",m?m.id:"","xmatdel");
+}
+function xMatScopeForm(){
+  const have={}; X.materials.filter(m=>m.job_id===job.id&&m.scope_item_id).forEach(m=>have[m.scope_item_id]=1);
+  const items=D.scope.filter(s=>num(s.qty)>0);
+  const isPlant=s=>/plant|tree|shrub|grass|tubestock|lomandra|dianella|westringia|callistemon|lilly|\d+\s?mm|\d+\s?l\b/i.test(s.description||"");
+  const isMat=s=>/turf|soil|mulch|gravel|roadbase|sand|paver|sleeper|block|pipe|edging|concrete|timber|stone/i.test(s.description||"");
+  return xHead("Take-off from scope")+'<div class="ps">Tick the scope lines that are materials or plants to track. Quantities come across as the take-off.</div>'+
+    '<div style="border:1px solid var(--line);border-radius:3px;max-height:50vh;overflow:auto;margin-top:8px"><table><thead><tr><th></th><th>Line</th><th class="r">Qty</th><th>Type</th><th class="r">Waste%</th></tr></thead><tbody>'+
+    items.map(s=>'<tr style="'+(have[s.id]?"opacity:.45":"")+'"><td><input type="checkbox" name="xms_pick" value="'+s.id+'"'+(have[s.id]?" disabled":(isPlant(s)||isMat(s))?" checked":"")+'></td>'+
+      '<td><b>'+esc(s.label||s.code)+'</b><div class="ps clamp">'+esc(s.description)+'</div></td><td class="r">'+num(s.qty)+' '+esc(s.unit||"")+'</td>'+
+      '<td><select class="in" style="padding:4px" id="xms_k_'+s.id+'">'+XMAT.map(k=>'<option'+((isPlant(s)?"Plant":"Material")===k?" selected":"")+'>'+k+'</option>').join("")+'</select></td>'+
+      '<td><input class="in qty" style="width:64px" id="xms_w_'+s.id+'" value="'+(isPlant(s)?3:5)+'"></td></tr>').join("")+'</tbody></table></div>'+xBtns("xmatscopesave","");
+}
+function xMatImportForm(){
+  return xHead("Import plant schedule")+'<div class="ps">A CSV with columns like Code, Botanical name, Pot size, Qty (export it from Excel as CSV).</div>'+
+    fld("File",'<input class="in" type="file" id="xmi_file" accept=".csv,text/csv">')+'<div class="grid2">'+fld("Area",xAreaSel("xmi_area",""))+
+    fld("Waste %",'<input class="in" inputmode="decimal" id="xmi_waste" value="3">')+'</div><div id="xmi_prev" class="ps" style="margin-top:8px"></div>'+xBtns("xmatimportsave","");
+}
+function xCsv(text){ const rows=[];let row=[],cur="",q=false;
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else if(ch==='"') q=true; else if(ch===","){row.push(cur);cur="";} else if(ch==="\n"||ch==="\r"){ if(ch==="\r"&&text[i+1]==="\n") i++; row.push(cur);rows.push(row);row=[];cur=""; } else cur+=ch; }
+  if(cur!==""||row.length){row.push(cur);rows.push(row);} return rows.filter(r=>r.some(c=>c.trim()!=="")); }
+let xImportRows=[];
+
+/* ---------- Purchase orders ---------- */
+function xViewPO(){
+  if(!caps.siteops) return xSetup();
+  const rows=X.po.filter(p=>p.job_id===job.id);
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Purchase orders</div><div class="ps">Raise the order, set the delivery day (it shows on the roster), mark it delivered and the cost books itself as Awaiting Invoice.</div></div>'+
+    '<button class="btn hi" data-act="xpoadd">+ New PO</button></div>';
+  if(!rows.length) h+='<div class="empty">No purchase orders yet.</div>';
+  else{ h+='<div class="scroll"><table><thead><tr><th>PO</th><th>Supplier</th><th>Ordered</th><th>Delivery</th><th>Items</th><th class="r">Ex GST</th><th>Status</th><th></th></tr></thead><tbody>';
+    rows.forEach(p=>{ const late=p.status==="Ordered"&&p.delivery_date&&p.delivery_date<xToday();
+      h+='<tr><td style="font-weight:600">'+esc(p.po_no||"")+'</td><td>'+esc(p.supplier)+'</td><td>'+fmtDay(p.order_date)+'</td><td class="'+(late?"neg":"")+'">'+fmtDay(p.delivery_date)+(late?' late':'')+'</td>'+
+        '<td style="max-width:300px"><div class="clamp">'+(p.items||[]).map(i=>esc(num(i.qty)+" "+(i.unit||"")+" "+i.desc)).join("; ")+'</div></td><td class="r" style="font-weight:600">'+money(num(p.total),2)+'</td>'+
+        '<td><span class="chip">'+esc(p.status)+'</span></td><td style="white-space:nowrap">'+(p.status==="Ordered"?'<button class="btn q sm" data-act="xpodeliv" data-id="'+p.id+'">Delivered</button> ':'')+
+        '<button class="btn q sm" data-act="xpocopy" data-id="'+p.id+'">Copy</button> <button class="x" data-act="xpoedit" data-id="'+p.id+'">✎</button></td></tr>'; });
+    h+='</tbody></table></div>'; }
+  return h+'</div>';
+}
+function xPoForm(p,mat){
+  const mats=X.materials.filter(m=>m.job_id===(p?p.job_id:job.id));
+  let items=p&&p.items&&p.items.length?p.items.slice():[{},{},{}];
+  if(mat){ const q=xMatQty(mat); items=[{desc:xMatLabel(mat),qty:q.remaining,unit:mat.unit||"",rate:"",material_id:mat.id},{}]; }
+  const f=p||{po_no:"PO-"+String(X.po.length+1).padStart(3,"0"),supplier:"",order_date:xToday(),delivery_date:"",status:"Ordered",note:""};
+  const sups=[]; D.costs.forEach(c=>{ if(c.supplier&&sups.indexOf(c.supplier)<0) sups.push(c.supplier); });
+  const line=(i,k)=>'<input class="in" list="xpo_mats" id="xp_d'+k+'" value="'+esc(i.desc||"")+'" placeholder="Item"><input class="in" inputmode="decimal" id="xp_q'+k+'" value="'+esc(i.qty==null?"":i.qty)+'"><input class="in" id="xp_u'+k+'" value="'+esc(i.unit||"")+'" placeholder="unit"><input class="in" inputmode="decimal" id="xp_r'+k+'" value="'+esc(i.rate==null?"":i.rate)+'"><input type="hidden" id="xp_m'+k+'" value="'+esc(i.material_id||"")+'">';
+  return xHead(p?"Edit "+esc(p.po_no||"PO"):"New purchase order")+'<div class="grid2">'+
+    fld("PO no.",'<input class="in" id="xp_no" value="'+esc(f.po_no||"")+'">')+fld("Supplier",'<input class="in" list="xpo_sups" id="xp_sup" value="'+esc(f.supplier)+'"><datalist id="xpo_sups">'+sups.map(s=>'<option value="'+esc(s)+'">').join("")+'</datalist>')+
+    fld("Order date",'<input class="in" type="date" id="xp_od" value="'+esc(f.order_date)+'">')+fld("Delivery date",'<input class="in" type="date" id="xp_dd" value="'+esc(f.delivery_date||"")+'">')+
+    fld("Status",'<select class="in" id="xp_st">'+XPO.map(s=>'<option'+(f.status===s?" selected":"")+'>'+s+'</option>').join("")+'</select>')+
+    fld("Area",xAreaSel("xp_area",f.area||""))+'</div>'+
+    '<datalist id="xpo_mats">'+mats.map(m=>'<option value="'+esc(xMatLabel(m))+'">'+xMatQty(m).remaining+' '+esc(m.unit||"")+' still to order</option>').join("")+'</datalist>'+
+    (mats.length?'<div class="ps" style="margin-top:8px">Pick a take-off item and the unit and remaining quantity fill in; the order then counts against it.</div>':'')+
+    '<div id="xp_items" style="display:grid;grid-template-columns:2fr .7fr .7fr .9fr;gap:6px;margin-top:8px"><span class="lab">Item</span><span class="lab">Qty</span><span class="lab">Unit</span><span class="lab">Rate</span>'+
+    items.map(line).join("")+'</div><div style="display:flex;gap:8px;align-items:center;margin-top:8px"><button class="btn q sm" data-act="xpoline">+ Line</button><span class="ps" id="xp_tot"></span></div>'+
+    fld("Delivery note (gate, contact, time)",'<input class="in" id="xp_note" value="'+esc(f.note||"")+'" placeholder="Gate 2, call Matt, before 7am">')+
+    xBtns("xposave",p?p.id:"","xpodel");
+}
+function xPoRead(){ const its=[]; let k=0;
+  while(document.getElementById("xp_d"+k)){ const g=x=>document.getElementById("xp_"+x+k).value; if(g("d").trim()) its.push({desc:g("d").trim(),qty:num(g("q")),unit:g("u").trim(),rate:num(g("r")),material_id:g("m")||null}); k++; }
+  return its; }
+function xPoTotal(){ const t=xPoRead().reduce((a,i)=>a+i.qty*i.rate,0); const el=document.getElementById("xp_tot"); if(el) el.textContent="Total "+money(t,2)+" ex GST"; }
+
+/* ---------- Retention register ---------- */
+function xRetInfo(j){ const cl=D.claims.filter(c=>c.job_id===j.id), held=cl.reduce((a,c)=>a+num(c.retention),0);
+  const net=held-num(j.ret_release1)-num(j.ret_release2), pc=j.pc_date||"", dlp=num(j.dlp_weeks)||52;
+  const r2=pc?addDays(pc,dlp*7):""; const half=Math.round(held/2*100)/100;
+  const o1=pc&&!num(j.ret_release1)&&xDays(pc)<0?-xDays(pc):0, o2=r2&&!num(j.ret_release2)&&xDays(r2)<0?-xDays(r2):0;
+  return {held:held,net:net,pc:pc,dlp:dlp,r1:pc,r2:r2,a1:half,a2:held-half,o1:o1,o2:o2}; }
+function xRetPanel(){
+  if(!caps.siteops) return "";
+  const r=xRetInfo(job);
+  return '<div class="panel"><div class="ph"><div><div class="pt">Retention</div><div class="ps">Enter retention per claim in the table above when it is certified. Release 1 (50%) at practical completion, release 2 after the defects period.</div></div>'+
+    '<button class="btn q" data-act="xretedit">Edit</button></div><div class="band" style="border:0">'+
+    cell("Held by builder",money(r.net),money(r.held)+" withheld to date")+cell("Practical completion",r.pc?fmtDay(r.pc):"not set",r.dlp+"-week DLP")+
+    cell("Release 1 · 50%",num(job.ret_release1)?"paid "+money(job.ret_release1):money(r.a1),r.r1?("due "+fmtDay(r.r1)+(r.o1?" · "+r.o1+" d overdue":"")):"set PC date",r.o1?"neg":(num(job.ret_release1)?"pos":""))+
+    cell("Release 2 · balance",num(job.ret_release2)?"paid "+money(job.ret_release2):money(r.a2),r.r2?("due "+fmtDay(r.r2)+(r.o2?" · "+r.o2+" d overdue":"")):"",r.o2?"neg":(num(job.ret_release2)?"pos":""))+'</div>'+
+    (job.ret_note?'<div style="padding:0 14px 12px" class="ps">'+esc(job.ret_note)+'</div>':'')+'</div>';
+}
+function xRetForm(){ const j=job;
+  return xHead("Retention & defects period")+'<div class="grid2">'+
+    fld("Practical completion",'<input class="in" type="date" id="xt_pc" value="'+esc(j.pc_date||"")+'">')+fld("Defects period (weeks)",'<input class="in" inputmode="numeric" id="xt_dlp" value="'+esc(j.dlp_weeks||52)+'">')+
+    fld("Release 1 received $",'<input class="in" inputmode="decimal" id="xt_r1" value="'+esc(j.ret_release1||"")+'">')+fld("Received on",'<input class="in" type="date" id="xt_r1d" value="'+esc(j.ret_release1_on||"")+'">')+
+    fld("Release 2 received $",'<input class="in" inputmode="decimal" id="xt_r2" value="'+esc(j.ret_release2||"")+'">')+fld("Received on",'<input class="in" type="date" id="xt_r2d" value="'+esc(j.ret_release2_on||"")+'">')+'</div>'+
+    fld("Notes (who you spoke to, what they said)",'<textarea class="in" id="xt_note" rows="2">'+esc(j.ret_note||"")+'</textarea>')+xBtns("xretsave","");
+}
+function xRetRow(c){ return '<input class="in qty" inputmode="decimal" placeholder="0" value="'+esc(c.retention==null||num(c.retention)===0?"":c.retention)+'" data-act="xclret" data-id="'+c.id+'">'; }
+
+/* ---------- Maintenance period ---------- */
+function xMaintPanel(){
+  const visits=X.rosters.filter(r=>r.job_id===job.id&&r.kind==="maint").sort((a,b)=>a.roster_date<b.roster_date?-1:1);
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Establishment & maintenance · '+esc(job.name)+'</div><div class="ps">'+
+    (job.maint_start?num(job.maint_weeks)+'-week period from '+fmtDay(job.maint_start)+', '+esc(job.maint_freq||"")+' visits. Each visit: '+esc(job.maint_scope||""):
+    'After softscape practical completion, plan the watering / weeding / replacement visits. They go on the roster, the crew logs each one in the diary with photos, and the completion report proves it to the builder.')+'</div></div>'+
+    '<div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn q" data-act="xmaintedit">'+(visits.length?"Re-plan visits":"Set up visits")+'</button>'+
+    (visits.length?'<button class="btn hi" data-act="xmaintreport">Completion report</button>':'')+'</div></div>';
+  if(visits.length){ h+='<div class="scroll"><table><thead><tr><th>#</th><th>Date</th><th>Done</th><th>Crew</th><th>Diary</th></tr></thead><tbody>';
+    visits.forEach((v,i)=>{ const d=X.diary.filter(x=>x.job_id===job.id&&x.diary_date===v.roster_date)[0], past=v.roster_date<xToday();
+      h+='<tr><td>'+(i+1)+'</td><td>'+fmtDay(v.roster_date)+'</td><td>'+(d?'<span class="pos">✓</span>':past?'<span class="neg">missed</span>':'<span class="ps">upcoming</span>')+'</td><td>'+((v.crew_ids||[]).map(xCrewName).join(", ")||'<span class="ps">unassigned</span>')+'</td><td class="clamp" style="max-width:320px">'+(d?esc((d.work||"").slice(0,90)):"")+'</td></tr>'; });
+    h+='</tbody></table></div>'; }
+  return h+'</div>';
+}
+function xMaintForm(){ const j=job;
+  return xHead("Plan maintenance visits")+'<div class="grid2">'+
+    fld("Period starts",'<input class="in" type="date" id="xn_start" value="'+esc(j.maint_start||xToday())+'">')+
+    fld("Length",'<select class="in" id="xn_weeks">'+[13,26,52].map(w=>'<option'+(num(j.maint_weeks||13)===w?" selected":"")+'>'+w+'</option>').join("")+'</select>')+
+    fld("Visits",'<select class="in" id="xn_freq">'+["weekly","fortnightly","monthly"].map(f=>'<option'+((j.maint_freq||"fortnightly")===f?" selected":"")+'>'+f+'</option>').join("")+'</select>')+'</div>'+
+    fld("Scope of each visit",'<input class="in" id="xn_scope" value="'+esc(j.maint_scope||"Water, weed, replace failed plants, check stakes/ties and mulch depth, mow/edge turf")+'">')+
+    fld("Default crew",xCrewChips("xn_crew",[]))+'<div class="ps" style="margin-top:8px">Upcoming maintenance visits already on the roster for this job are replaced.</div>'+xBtns("xmaintsave","");
+}
+
+/* ---------- Weekly report & completion report (printable) ---------- */
+function xOrgHead(title,sub){ const o=D.org||{};
+  return '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:2px solid var(--ink);padding-bottom:10px">'+
+    (o.logo?'<img src="'+o.logo+'" style="max-height:60px;max-width:220px">':'<div style="font-size:18pt;font-weight:700">'+esc(o.name||"MJ GreenGuard Landscaping")+'</div>')+
+    '<div style="text-align:right;font-size:9pt;color:#555">'+esc(o.name||"")+(o.legal_name?'<br>'+esc(o.legal_name):'')+(o.abn?'<br>ABN '+esc(o.abn):'')+(o.licence?'<br>QBCC '+esc(o.licence):'')+(o.address?'<br>'+esc(o.address):'')+(o.phone?'<br>'+esc(o.phone):'')+(o.email?'<br>'+esc(o.email):'')+'</div></div>'+
+    '<h1 style="font-size:20pt;margin:18px 0 2px">'+title+'</h1><div style="color:#555">'+sub+'</div>';
+}
+function xReportData(ws){ const we=addDays(ws,6);
+  const diary=X.diary.filter(d=>d.job_id===job.id&&d.diary_date>=ws&&d.diary_date<=we).sort((a,b)=>a.diary_date<b.diary_date?-1:1);
+  const sheets=D.sheets.filter(e=>e.job_id===job.id&&e.week_start===ws);
+  const byDay=[0,1,2,3,4,5,6].map(i=>({d:addDays(ws,i),names:sheets.filter(e=>num(e["d"+i])>0).map(e=>xCrewName(e.crew_id)),units:sheets.reduce((a,e)=>a+num(e["d"+i]),0)})).filter(x=>x.units>0);
+  const areas={}; D.scope.filter(claimable).forEach(s=>{ const a=s.area||"Other"; areas[a]=areas[a]||{v:0,d:0}; areas[a].v+=num(s.qty)*num(s.rate); areas[a].d+=Math.min(doneOf(s.id),num(s.qty))*num(s.rate); });
+  const stages=Object.keys(areas).map(a=>({name:a,pct:areas[a].v?Math.round(areas[a].d/areas[a].v*100):0,v:areas[a].v}));
+  const tv=stages.reduce((a,s)=>a+s.v,0), overall=tv?Math.round(stages.reduce((a,s)=>a+s.pct*s.v,0)/tv):0;
+  const lost=diary.filter(d=>/rain|wet/i.test(d.weather||"")).length;
+  const photos=[]; diary.forEach(d=>X.files.filter(f=>f.diary_id===d.id).forEach(f=>photos.push({path:f.path,date:d.diary_date})));
+  const next=D.tasks.filter(t=>t.status!=="Done"&&t.start_date<=addDays(we,7)&&taskEnd(t)>=addDays(we,1)).slice(0,8);
+  return {ws:ws,we:we,diary:diary,byDay:byDay,stages:stages,overall:overall,lost:lost,photos:photos.slice(0,24),next:next}; }
+function xViewReport(){
+  if(!caps.siteops) return xSetup();
+  const ws=X.rweek, r=xReportData(ws);
+  let h='<div class="panel"><div class="ph"><div style="display:flex;align-items:center;gap:8px"><button class="x" data-act="xrpwk" data-d="-7">‹</button>'+
+    '<div><div class="pt">Weekly report · '+fmtWeek(ws)+'</div><div class="ps">Built from the site diary, timesheets and measured progress. Nothing to type.</div></div><button class="x" data-act="xrpwk" data-d="7">›</button></div>'+
+    '<div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn q" data-act="xrpwk" data-d="0">This week</button><button class="btn q" data-act="xrpcopy">Copy email text</button><button class="btn hi" data-act="xrpprint">Print / PDF</button></div></div>'+
+    '<div class="band" style="border:0">'+cell("Overall progress",r.overall+"%","by measured value")+cell("Diary entries",r.diary.length,"this week")+cell("Crew days",Math.round(r.byDay.reduce((a,x)=>a+x.units,0)*10)/10,"from timesheets")+cell("Weather-affected",r.lost,"days")+'</div>'+
+    '<div style="padding:14px"><div class="pt">Progress by area</div><table style="margin-top:6px"><tbody>'+r.stages.map(s=>'<tr><td>'+esc(s.name)+'</td><td class="r" style="width:70px">'+s.pct+'%</td><td style="width:35%"><div class="bar"><i style="width:'+s.pct+'%"></i></div></td></tr>').join("")+'</tbody></table>'+
+    '<div class="pt" style="margin-top:14px">This week</div>'+(r.diary.length?r.diary.map(d=>xDiaryCard(d,false)).join(""):'<div class="ps">No diary entries this week.</div>')+'</div></div>';
+  return h;
+}
+function xReportDoc(){ const r=xReportData(X.rweek), o=D.org||{};
+  let h='<div class="doc" style="font-size:10.5pt">'+xOrgHead("Weekly Progress Report","Week "+longDate(r.ws)+" – "+longDate(r.we))+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;margin-top:14px"><div><b style="color:#555">Project</b> &nbsp;'+esc(job.name)+'</div><div><b style="color:#555">Client</b> &nbsp;'+esc((byId(D.clients,job.client_id)||{}).name||"")+'</div>'+
+    '<div><b style="color:#555">Site</b> &nbsp;'+esc(job.site_address||"")+'</div><div><b style="color:#555">Reference</b> &nbsp;'+esc(job.ref||"")+'</div><div><b style="color:#555">Overall progress</b> &nbsp;'+r.overall+'%</div></div>'+
+    '<h2>Progress by area</h2><table><tbody>'+r.stages.map(s=>'<tr><td>'+esc(s.name)+'</td><td class="r" style="width:70px">'+s.pct+'%</td><td style="width:40%"><div class="bar"><i style="width:'+s.pct+'%;background:#2E6F4E"></i></div></td></tr>').join("")+'</tbody></table>'+
+    '<h2>Work completed this week</h2>'+(r.diary.length?r.diary.map(d=>'<div style="margin-bottom:10px;page-break-inside:avoid"><b>'+longDate(d.diary_date)+' · '+esc(d.weather||"")+(d.on_site?' · On site: '+esc(d.on_site):'')+'</b>'+
+      (d.work?'<p style="margin:3px 0">'+esc(d.work)+'</p>':'')+(d.deliveries?'<p style="margin:3px 0"><i>Deliveries / plant:</i> '+esc(d.deliveries)+'</p>':'')+(d.issues?'<p style="margin:3px 0"><i>Issues / instructions:</i> '+esc(d.issues)+'</p>':'')+'</div>').join(""):'<p>No site activity recorded.</p>')+
+    (r.lost?'<p><b>Weather:</b> '+r.lost+' day'+(r.lost===1?"":"s")+' affected by rain or wet site conditions.</p>':'')+
+    '<h2>Labour on site</h2><table><thead><tr><th>Day</th><th>Crew</th><th class="r">Units</th></tr></thead><tbody>'+(r.byDay.length?r.byDay.map(x=>'<tr><td>'+fmtDay(x.d)+'</td><td>'+x.names.map(esc).join(", ")+'</td><td class="r">'+x.units+'</td></tr>').join(""):'<tr><td colspan="3">No timesheets this week.</td></tr>')+'</tbody></table>'+
+    (r.next.length?'<h2>Planned next week</h2><ul>'+r.next.map(t=>'<li>'+esc(t.name)+' · '+fmtDay(t.start_date)+' → '+fmtDay(taskEnd(t))+'</li>').join("")+'</ul>':'')+
+    (r.photos.length?'<h2>Site photos</h2><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+r.photos.map(p=>'<figure style="margin:0;page-break-inside:avoid"><img class="xph" data-path="'+esc(p.path)+'" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px" alt=""><figcaption style="font-size:8.5pt;color:#777">'+fmtDay(p.date)+'</figcaption></figure>').join("")+'</div>':'')+
+    '<div style="margin-top:24px;font-size:9pt;color:#777;border-top:1px solid #ddd;padding-top:8px">Prepared by '+esc(o.name||"MJ GreenGuard Landscaping")+' · '+longDate(xToday())+'</div></div>';
+  return h; }
+function xMaintDoc(){ const j=job, o=D.org||{}, start=j.maint_start, end=addDays(start,num(j.maint_weeks)*7);
+  const visits=X.rosters.filter(r=>r.job_id===j.id&&r.kind==="maint"), entries=X.diary.filter(d=>d.job_id===j.id&&d.diary_date>=start&&d.diary_date<=end).sort((a,b)=>a.diary_date<b.diary_date?-1:1);
+  const photos=[]; entries.forEach(d=>X.files.filter(f=>f.diary_id===d.id).slice(0,2).forEach(f=>photos.push({path:f.path,date:d.diary_date})));
+  return '<div class="doc" style="font-size:10.5pt">'+xOrgHead("Establishment & Maintenance Completion Report",esc(j.name))+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;margin-top:14px"><div><b style="color:#555">Client</b> &nbsp;'+esc((byId(D.clients,j.client_id)||{}).name||"")+'</div><div><b style="color:#555">Reference</b> &nbsp;'+esc(j.ref||"")+'</div><div><b style="color:#555">Site</b> &nbsp;'+esc(j.site_address||"")+'</div><div><b style="color:#555">Period</b> &nbsp;'+longDate(start)+' – '+longDate(end)+' ('+num(j.maint_weeks)+' weeks, '+esc(j.maint_freq||"")+')</div></div>'+
+    '<p style="margin-top:14px">This report confirms that the establishment and maintenance period for the landscape works has been carried out in accordance with the specification. Scope of each visit: '+esc(j.maint_scope||"")+'.</p>'+
+    '<h2>Visit log</h2><table><thead><tr><th>#</th><th>Date</th><th>Weather</th><th>Work carried out</th><th>Issues / replacements</th></tr></thead><tbody>'+(entries.length?entries.map((d,i)=>'<tr><td>'+(i+1)+'</td><td>'+fmtDay(d.diary_date)+'</td><td>'+esc(d.weather||"")+'</td><td>'+esc(d.work||"")+'</td><td>'+esc(d.issues||"")+'</td></tr>').join(""):'<tr><td colspan="5">No visits recorded.</td></tr>')+'</tbody></table>'+
+    '<p>'+entries.length+' of '+(visits.length||entries.length)+' scheduled visits completed.</p>'+
+    (photos.length?'<h2>Photographic record</h2><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+photos.map(p=>'<figure style="margin:0;page-break-inside:avoid"><img class="xph" data-path="'+esc(p.path)+'" style="width:100%;aspect-ratio:4/3;object-fit:cover" alt=""><figcaption style="font-size:8.5pt;color:#777">'+fmtDay(p.date)+'</figcaption></figure>').join("")+'</div>':'')+
+    '<h2>Handover</h2><p>All plant material is established and in a healthy condition at the date of this report, with failures replaced as noted above. Ongoing maintenance is the responsibility of the client from '+longDate(end)+'.</p>'+
+    '<div style="margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:40px;font-size:10pt"><div style="border-top:1px solid #333;padding-top:4px">'+esc(prof.full_name||"")+'<br>'+esc(o.name||"MJ GreenGuard Landscaping")+' · Date</div><div style="border-top:1px solid #333;padding-top:4px">Accepted for the client<br>Name · Signature · Date</div></div></div>'; }
+function xCopyText(t){ const ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.top="-1000px"; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); alert("Copied."); }catch(e){ alert("Could not copy."); } document.body.removeChild(ta); }
+
+/* ---------- shifts → weekly timesheet (admin) ---------- */
+function xShiftsPanel(){
+  if(!caps.siteops) return "";
+  const we=addDays(week,6), rows=X.shifts.filter(s=>s.ended_at&&s.job_id===job.id&&isoOf(new Date(s.started_at))>=week&&isoOf(new Date(s.started_at))<=we);
+  const pending=rows.filter(s=>!s.applied);
+  let h='<div class="panel"><div class="ph"><div><div class="pt">Clock-ins this week</div><div class="ps">'+rows.length+' shifts · '+pending.length+' not yet on the timesheet</div></div>'+
+    (pending.length?'<button class="btn hi" data-act="xapply">Pull into crew hours</button>':'')+'</div>';
+  if(!rows.length) return h+'<div class="empty">No clock-ins on this job this week.</div></div>';
+  h+='<div class="scroll"><table><thead><tr><th>Day</th><th>Who</th><th>In</th><th>Out</th><th class="r">Hours</th><th>Where</th><th>Note</th><th></th></tr></thead><tbody>';
+  rows.sort((a,b)=>a.started_at<b.started_at?-1:1).forEach(s=>{ const dIn=xDist(s.start_lat,s.start_lng,job.site_lat,job.site_lng);
+    h+='<tr><td>'+fmtDay(isoOf(new Date(s.started_at)))+'</td><td style="font-weight:600">'+esc(xCrewName(s.crew_id))+'</td><td>'+xTime(s.started_at)+' '+xMap(s.start_lat,s.start_lng)+'</td><td>'+xTime(s.ended_at)+' '+xMap(s.end_lat,s.end_lng)+'</td>'+
+      '<td class="r">'+num(s.hours)+'</td><td>'+(dIn==null?(s.start_lat?'<span class="ps">site location not set</span>':'<span class="ps">no GPS</span>'):(dIn>500?'<span class="neg">'+(dIn/1000).toFixed(1)+' km from site</span>':'<span class="pos">'+dIn+' m from site</span>'))+'</td>'+
+      '<td class="clamp" style="max-width:260px">'+esc(s.note||"")+'</td><td>'+(s.applied?'<span class="chip">on sheet</span>':'')+'</td></tr>'; });
+  h+='</tbody></table></div>'+(job.site_lat?'':'<div style="padding:10px 14px" class="ps">Set the site location once from the site so distances show: <button class="btn q sm" data-act="xsitehere">Use my location as the site</button></div>')+'</div>';
+  return h;
+}
+async function xApplyShifts(){
+  const we=addDays(week,6), pending=X.shifts.filter(s=>s.ended_at&&!s.applied&&s.job_id===job.id&&isoOf(new Date(s.started_at))>=week&&isoOf(new Date(s.started_at))<=we);
+  if(!pending.length) return;
+  busy=true;
+  for(const s of pending){ const c=byId(D.crew,s.crew_id); if(!c) continue;
+    let sheet=D.sheets.filter(e=>e.week_start===week&&e.crew_id===c.id&&e.job_id===job.id)[0];
+    if(!sheet){ const {data,error}=await sb.from("timesheets").insert({org_id:prof.org_id,job_id:job.id,crew_id:c.id,week_start:week,area:c.area}).select().single();
+      if(error){ busy=false; return alert("Could not add a timesheet row: "+error.message); } sheet=data; D.sheets.push(sheet); }
+    const i=(new Date(s.started_at).getDay()+6)%7, f="d"+i, add=c.basis==="Hourly"?num(s.hours):(num(s.hours)>=4?1:0.5);
+    const patch={}; patch[f]=Math.round((num(sheet[f])+add)*100)/100;
+    if(await db(sb.from("timesheets").update(patch).eq("id",sheet.id))){ sheet[f]=patch[f]; await sb.from("shifts").update({applied:true}).eq("id",s.id); } }
+  busy=false; await refresh();
+}
+
+/* ---------- actions ---------- */
+document.addEventListener("click",async ev=>{
+  const el=ev.target.closest("[data-act]"); if(!el) return;
+  const a=el.getAttribute("data-act"); if(!a||a[0]!=="x") return;
+  const id=el.getAttribute("data-id"), g=x=>{const e=document.getElementById(x);return e?e.value:"";};
+  if(a==="xchip"){ el.closest("label").classList.toggle("on",el.checked); return; }
+  if(a==="xphoto"){ ev.preventDefault(); const p=el.getAttribute("data-path"); const u=X.sig[p]; if(u) window.open(u,"_blank"); return; }
+  if(a==="xrwk"){ const d=num(el.getAttribute("data-d")); X.rday=d?addDays(X.rday,d):isoOf(mondayOf(new Date())); render(); return; }
+  if(a==="xdwk"){ const d=num(el.getAttribute("data-d")); X.dweek=d?addDays(X.dweek,d):isoOf(mondayOf(new Date())); render(); return; }
+  if(a==="xrpwk"){ const d=num(el.getAttribute("data-d")); X.rweek=d?addDays(X.rweek,d):isoOf(mondayOf(new Date())); render(); return; }
+  if(a==="xlink"){ if(await db(sb.from("crew_links").upsert({user_id:me.id,org_id:prof.org_id,crew_id:id}))){ X.myCrew=id; await refresh(); } return; }
+  if(a==="xunlink"){ ev.preventDefault(); if(await db(sb.from("crew_links").delete().eq("user_id",me.id))){ X.myCrew=null; await refresh(); } return; }
+  if(a==="xstartshift"){ if(!X.myCrew) return; el.disabled=true; el.textContent="Getting location…"; const p=await xGps();
+    if(await db(sb.from("shifts").insert({org_id:prof.org_id,job_id:id,crew_id:X.myCrew,user_id:me.id,started_at:new Date().toISOString(),
+      start_lat:p?p.lat:null,start_lng:p?p.lng:null,start_acc:p?p.acc:null}))) await refresh(); return; }
+  if(a==="xendshift"){ openModal(xEndShiftForm(byId(X.shifts,id))); return; }
+  if(a==="xendsave"){ const s=byId(X.shifts,id); if(!s) return; const btn=el; btn.disabled=true; btn.textContent="Saving…";
+    const brk=num(g("xs_brk")), note=[g("xs_note").trim(),g("xs_plant").trim()?"Plant: "+g("xs_plant").trim():""].filter(Boolean).join(" · ");
+    const p=await xGps(), end=new Date(), h=Math.max(0.25,Math.round((((end-new Date(s.started_at))/36e5)-brk/60)*4)/4);
+    closeModal();
+    if(await db(sb.from("shifts").update({ended_at:end.toISOString(),break_min:brk,hours:h,note:note,end_lat:p?p.lat:null,end_lng:p?p.lng:null,end_acc:p?p.acc:null}).eq("id",id))) await refresh(); return; }
+  if(a==="xsitehere"){ const p=await xGps(); if(!p) return alert("Could not get a location. Allow location for this site in the browser and try again.");
+    if(await db(sb.from("jobs").update({site_lat:p.lat,site_lng:p.lng}).eq("id",job.id))) await refresh(); return; }
+  if(a==="xapply"){ await xApplyShifts(); return; }
+  if(a==="xrosteradd"){ openModal(xRosterForm(null,el.getAttribute("data-date"))); return; }
+  if(a==="xrosteredit"){ openModal(xRosterForm(byId(X.rosters,id))); return; }
+  if(a==="xrosterdel"){ if(!confirm("Remove this roster entry?")) return; closeModal(); if(await db(sb.from("rosters").delete().eq("id",id))) await refresh(); return; }
+  if(a==="xrostersave"){ const rec={roster_date:g("xr_date"),job_id:g("xr_job"),crew_ids:xChecked("xr_crew"),plant:g("xr_plant").trim(),note:g("xr_note").trim()};
+    if(!rec.roster_date||!rec.job_id) return alert("Pick a date and a job."); const rep=num(g("xr_rep"))||1; closeModal();
+    let ok; if(id) ok=await db(sb.from("rosters").update(rec).eq("id",id));
+    else if(rep===1) ok=await db(sb.from("rosters").insert(Object.assign({org_id:prof.org_id,kind:"work"},rec)));
+    else { const mon=isoOf(mondayOf(rec.roster_date)); ok=await db(sb.from("rosters").insert([0,1,2,3,4].map(i=>Object.assign({org_id:prof.org_id,kind:"work"},rec,{roster_date:addDays(mon,i)})))); }
+    if(ok) await refresh(); return; }
+  if(a==="xdiaryadd"){ openModal(xDiaryForm(null,el.getAttribute("data-job")||null)); return; }
+  if(a==="xdiaryedit"){ openModal(xDiaryForm(byId(X.diary,id))); return; }
+  if(a==="xdiarydel"){ if(!confirm("Delete this diary entry and its photos?")) return; closeModal(); if(await db(sb.from("site_diary").delete().eq("id",id))) await refresh(); return; }
+  if(a==="xdiarysave"){ const rec={diary_date:g("xd_date"),job_id:g("xd_job"),weather:g("xd_weather"),on_site:g("xd_onsite").trim(),work:g("xd_work").trim(),deliveries:g("xd_deliv").trim(),issues:g("xd_issues").trim()};
+    if(!rec.work&&!rec.issues&&!rec.deliveries) return alert("Write what happened, or an issue, before saving."); el.disabled=true; el.textContent="Saving…";
+    let did=id; if(id){ if(!await db(sb.from("site_diary").update(rec).eq("id",id))) return; }
+    else { const {data,error}=await sb.from("site_diary").insert(Object.assign({org_id:prof.org_id,created_by:me.id},rec)).select().single(); if(error){ el.disabled=false; return alert("Could not save: "+error.message); } did=data.id; }
+    await xUploadAll("xd_files","diary_id",did); closeModal(); await refresh(); return; }
+  if(a==="xquickphoto"){ return; }
+  if(a==="xsafeadd"){ openModal(xSafeForm(null)); return; }
+  if(a==="xsafeedit"){ openModal(xSafeForm(byId(X.safety,id))); return; }
+  if(a==="xsafedel"){ if(!confirm("Delete this safety record?")) return; closeModal(); if(await db(sb.from("safety_records").delete().eq("id",id))) await refresh(); return; }
+  if(a==="xsafesave"){ const rec={kind:g("xf_kind"),rec_date:g("xf_date"),job_id:g("xf_job"),title:g("xf_title").trim(),note:g("xf_note").trim(),signed:g("xf_signed").trim()};
+    if(!rec.title) return alert("Give it a title."); el.disabled=true; el.textContent="Saving…";
+    let sid=id; if(id){ if(!await db(sb.from("safety_records").update(rec).eq("id",id))) return; }
+    else { const {data,error}=await sb.from("safety_records").insert(Object.assign({org_id:prof.org_id,created_by:me.id},rec)).select().single(); if(error){ el.disabled=false; return alert("Could not save: "+error.message); } sid=data.id; }
+    await xUploadAll("xf_files","safety_id",sid); closeModal(); await refresh(); return; }
+  if(a==="xmatadd"){ openModal(xMatForm(null)); return; }
+  if(a==="xmatedit"){ openModal(xMatForm(byId(X.materials,id))); return; }
+  if(a==="xmatdel"){ if(!confirm("Delete this take-off item? Orders already linked keep their lines.")) return; closeModal(); if(await db(sb.from("materials").delete().eq("id",id))) await refresh(); return; }
+  if(a==="xmatsave"){ const rec={kind:g("xm_kind"),area:g("xm_area"),name:g("xm_name").trim(),size:g("xm_size").trim(),unit:g("xm_unit").trim(),takeoff:num(g("xm_takeoff")),waste_pct:num(g("xm_waste")),note:g("xm_note").trim()};
+    if(!rec.name) return alert("Name the item."); closeModal();
+    if(await db(id?sb.from("materials").update(rec).eq("id",id):sb.from("materials").insert(Object.assign({org_id:prof.org_id,job_id:job.id},rec)))) await refresh(); return; }
+  if(a==="xmatscope"){ openModal(xMatScopeForm()); return; }
+  if(a==="xmatscopesave"){ const picks=xChecked("xms_pick"); if(!picks.length) return alert("Tick at least one line."); closeModal();
+    const rows=picks.map(sid=>{ const s=byId(D.scope,sid); return {org_id:prof.org_id,job_id:job.id,kind:g("xms_k_"+sid)||"Material",area:s.area||"",name:(s.description||s.label||"").slice(0,120),size:"",unit:s.unit||"",takeoff:num(s.qty),waste_pct:num(g("xms_w_"+sid)),note:s.label||s.code,scope_item_id:sid}; });
+    if(await db(sb.from("materials").insert(rows))) await refresh(); return; }
+  if(a==="xmatimport"){ xImportRows=[]; openModal(xMatImportForm()); return; }
+  if(a==="xmatimportsave"){ if(!xImportRows.length) return alert("Choose a file first."); closeModal();
+    const rows=xImportRows.map(r=>({org_id:prof.org_id,job_id:job.id,kind:"Plant",area:g("xmi_area"),name:r.name,size:r.size,unit:"ea",takeoff:r.qty,waste_pct:num(g("xmi_waste")),note:r.code}));
+    if(await db(sb.from("materials").insert(rows))) await refresh(); return; }
+  if(a==="xpoadd"){ const mid=el.getAttribute("data-mat"); openModal(xPoForm(null,mid?byId(X.materials,mid):null)); xPoTotal(); return; }
+  if(a==="xpoedit"){ openModal(xPoForm(byId(X.po,id))); xPoTotal(); return; }
+  if(a==="xpodel"){ if(!confirm("Delete this purchase order?")) return; closeModal(); if(await db(sb.from("purchase_orders").delete().eq("id",id))) await refresh(); return; }
+  if(a==="xpoline"){ let k=0; while(document.getElementById("xp_d"+k)) k++;
+    document.getElementById("xp_items").insertAdjacentHTML("beforeend",'<input class="in" list="xpo_mats" id="xp_d'+k+'"><input class="in" inputmode="decimal" id="xp_q'+k+'"><input class="in" id="xp_u'+k+'"><input class="in" inputmode="decimal" id="xp_r'+k+'"><input type="hidden" id="xp_m'+k+'">'); return; }
+  if(a==="xposave"){ const its=xPoRead(); if(!g("xp_sup").trim()) return alert("Who is the supplier?"); if(!its.length) return alert("Add at least one line.");
+    const rec={po_no:g("xp_no").trim(),supplier:g("xp_sup").trim(),order_date:g("xp_od"),delivery_date:g("xp_dd")||null,status:g("xp_st"),items:its,total:Math.round(its.reduce((a,i)=>a+i.qty*i.rate,0)*100)/100,note:g("xp_note").trim(),area:g("xp_area")||null};
+    closeModal(); if(await db(id?sb.from("purchase_orders").update(rec).eq("id",id):sb.from("purchase_orders").insert(Object.assign({org_id:prof.org_id,job_id:job.id},rec)))) await refresh(); return; }
+  if(a==="xpodeliv"){ const p=byId(X.po,id); if(!p) return; if(!confirm("Mark "+(p.po_no||"this order")+" from "+p.supplier+" as delivered? A cost of "+money(num(p.total),2)+" ex GST is booked as Awaiting Invoice.")) return;
+    const today=xToday();
+    const {data,error}=await sb.from("costs").insert({org_id:prof.org_id,job_id:p.job_id,cost_date:today,week_start:isoOf(mondayOf(today)),area:p.area||AREAS[1],category:"Materials",supplier:p.supplier,
+      description:(p.items||[]).map(i=>num(i.qty)+" "+(i.unit||"")+" "+i.desc).join("; ").slice(0,200),invoice_ref:p.po_no||"",amount:num(p.total),status:"Awaiting Invoice",paid:0,due_date:caps.costDue?eom(today,1):undefined}).select().single();
+    if(error) return alert("Could not book the cost: "+error.message);
+    if(await db(sb.from("purchase_orders").update({status:"Delivered",delivered_on:today,cost_id:data.id}).eq("id",id))) await refresh(); return; }
+  if(a==="xpocopy"){ const p=byId(X.po,id), o=D.org||{}, j=byId(jobs,p.job_id)||{};
+    xCopyText("PURCHASE ORDER "+(p.po_no||"")+"\n"+(o.name||"MJ GreenGuard Landscaping")+(o.abn?" · ABN "+o.abn:"")+"\n\nSupplier: "+p.supplier+"\nOrder date: "+fmtDay(p.order_date)+"\nDeliver to: "+(j.site_address||j.name||"")+"\nDelivery date: "+(p.delivery_date?fmtDay(p.delivery_date):"TBC")+"\n"+(p.note?"Note: "+p.note+"\n":"")+"\n"+
+      (p.items||[]).map(i=>num(i.qty)+" "+(i.unit||"")+" "+i.desc+" @ "+money(num(i.rate),2)+" = "+money(num(i.qty)*num(i.rate),2)).join("\n")+"\n\nTotal ex GST: "+money(num(p.total),2)+"\n\nPlease quote PO "+(p.po_no||"")+" on the invoice.\n"+(prof.full_name||"")+(o.phone?" · "+o.phone:"")); return; }
+  if(a==="xretedit"){ openModal(xRetForm()); return; }
+  if(a==="xretsave"){ const rec={pc_date:g("xt_pc")||null,dlp_weeks:num(g("xt_dlp"))||52,ret_release1:num(g("xt_r1")),ret_release1_on:g("xt_r1d")||null,ret_release2:num(g("xt_r2")),ret_release2_on:g("xt_r2d")||null,ret_note:g("xt_note").trim()};
+    closeModal(); if(await db(sb.from("jobs").update(rec).eq("id",job.id))){ portfolio=null; await refresh(); } return; }
+  if(a==="xmaintedit"){ openModal(xMaintForm()); return; }
+  if(a==="xmaintsave"){ const start=g("xn_start"), weeks=num(g("xn_weeks")), freq=g("xn_freq"), step=freq==="weekly"?7:freq==="fortnightly"?14:30, crew=xChecked("xn_crew");
+    if(!start) return alert("Pick the start date."); closeModal(); busy=true;
+    const old=X.rosters.filter(r=>r.job_id===job.id&&r.kind==="maint"&&r.roster_date>=xToday());
+    if(old.length) await sb.from("rosters").delete().in("id",old.map(r=>r.id));
+    const total=Math.floor(weeks*7/step), rows=[];
+    for(let i=1;i<=total;i++){ const d=addDays(start,i*step); if(d<xToday()) continue; rows.push({org_id:prof.org_id,job_id:job.id,roster_date:d,crew_ids:crew,plant:"",note:"Maintenance visit "+i+"/"+total,kind:"maint"}); }
+    if(rows.length) await db(sb.from("rosters").insert(rows));
+    await db(sb.from("jobs").update({maint_start:start,maint_weeks:weeks,maint_freq:freq,maint_scope:g("xn_scope").trim()}).eq("id",job.id));
+    busy=false; portfolio=null; await refresh(); return; }
+  if(a==="xmaintreport"){ xdoc="maint"; render(); return; }
+  if(a==="xrpprint"){ xdoc="report"; render(); return; }
+  if(a==="xdocprint"){ window.print(); return; }
+  if(a==="xdocclose"){ xdoc=null; render(); return; }
+  if(a==="xrpcopy"){ const r=xReportData(X.rweek);
+    xCopyText("Hi,\n\nProgress update for "+job.name+" for the week "+fmtDay(r.ws)+" – "+fmtDay(r.we)+".\n\nOverall progress: "+r.overall+"%\n"+r.stages.map(s=>"- "+s.name+": "+s.pct+"%").join("\n")+
+      "\n\nWork completed this week:\n"+(r.diary.map(d=>fmtDay(d.diary_date)+" ("+(d.weather||"")+"): "+(d.work||"")).join("\n")||"No site activity recorded.")+(r.lost?"\n\nWeather: "+r.lost+" day(s) affected by rain / wet site.":"")+
+      (r.next.length?"\n\nPlanned next week:\n"+r.next.map(t=>"- "+t.name).join("\n"):"")+"\n\nRegards,\n"+(prof.full_name||"")+"\n"+((D.org||{}).name||"")); return; }
+});
+document.addEventListener("change",async ev=>{
+  const el=ev.target,a=el.getAttribute&&el.getAttribute("data-act"); if(!a||a[0]!=="x") return;
+  if(a==="xquickphoto"&&el.files&&el.files.length){ const jid=el.getAttribute("data-id"), today=xToday();
+    let d=X.diary.filter(x=>x.job_id===jid&&x.diary_date===today)[0];
+    if(!d){ const {data,error}=await sb.from("site_diary").insert({org_id:prof.org_id,job_id:jid,diary_date:today,weather:"Fine",on_site:X.myCrew?xCrewName(X.myCrew):"",work:"Photos",created_by:me.id}).select().single(); if(error) return alert("Could not save: "+error.message); d=data; }
+    busy=true; for(const f of Array.from(el.files)) await xUpload(f,"diary_id",d.id); busy=false; await refresh(); alert("Photo"+(el.files.length>1?"s":"")+" saved to today’s diary."); return; }
+  if(a==="xclret"){ const v=el.value===""?0:num(el.value); if(await db(sb.from("claims").update({retention:v}).eq("id",el.getAttribute("data-id")))) await refresh(); return; }
+});
+document.addEventListener("input",ev=>{ const el=ev.target,id=el.id||"";
+  if(/^xp_[dqr]\d+$/.test(id)){ if(id[3]==="d"){ const k=id.slice(4), m=X.materials.filter(x=>x.job_id===job.id&&xMatLabel(x)===el.value)[0];
+      const mEl=document.getElementById("xp_m"+k); if(m){ mEl.value=m.id; document.getElementById("xp_u"+k).value=m.unit||""; const q=document.getElementById("xp_q"+k); if(!num(q.value)) q.value=xMatQty(m).remaining; } else mEl.value=""; }
+    xPoTotal(); }
+  if(id==="xmi_file"&&el.files&&el.files[0]){ el.files[0].text().then(t=>{ const rows=xCsv(t); if(!rows.length) return; const hdr=rows[0].map(h=>h.toLowerCase());
+      const col=re=>hdr.findIndex(h=>re.test(h)); const cn=col(/botanic|species|plant|name|desc/), cq=col(/qty|quantity|no\.?$|number/), cs=col(/pot|size|container/), cc=col(/code|key|symbol/);
+      xImportRows=[]; rows.slice(1).forEach(r=>{ const name=(r[cn]||"").trim(), qty=num(r[cq]); if(name&&qty) xImportRows.push({name:name,qty:qty,size:cs>=0?(r[cs]||"").trim():"",code:cc>=0?(r[cc]||"").trim():""}); });
+      const pv=document.getElementById("xmi_prev"); if(pv) pv.textContent=xImportRows.length?xImportRows.length+" species · "+xImportRows.reduce((a,r)=>a+r.qty,0)+" plants found":"No rows with a plant name and quantity found."; }); }
+});
+
+if("serviceWorker" in navigator&&location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
 boot();
 </script>
 </body>
