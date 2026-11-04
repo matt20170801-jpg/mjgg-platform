@@ -352,12 +352,35 @@ function login(msg){
     '<span class="lab">Password</span><input class="in" id="lP" type="password" autocomplete="current-password">'+
     (msg?'<div class="err">'+esc(msg)+'</div>':'')+
     '<div style="margin-top:14px;display:flex;gap:8px"><button class="btn" id="lGo">Sign in</button>'+
-    '<button class="btn q" id="lReset">Change database</button></div></div>';
+    '<button class="btn q" id="lNew">Create account</button></div>'+
+    '<div class="ps" style="margin-top:14px">New on the crew? Tap <b>Create account</b> and use the join code Matt gave you. '+
+    '<a href="#" id="lReset" style="color:var(--mute)">Change database</a></div></div>';
   const go=async()=>{ $("#lGo").textContent="Signing in…";
     const {error}=await sb.auth.signInWithPassword({email:$("#lE").value.trim(),password:$("#lP").value});
     if(error) return login(error.message); boot(); };
   $("#lGo").onclick=go; $("#lP").onkeydown=e=>{ if(e.key==="Enter") go(); };
-  $("#lReset").onclick=()=>{ localStorage.removeItem(CFG_KEY); setup(); };
+  $("#lNew").onclick=()=>signup();
+  $("#lReset").onclick=e=>{ e.preventDefault(); if(confirm("Disconnect this device from the database?")){ localStorage.removeItem(CFG_KEY); setup(); } };
+}
+function signup(msg){
+  $("#root").innerHTML='<div class="mid"><div class="job">MJ GreenGuard</div><div class="sub">Create your crew account</div>'+
+    '<span class="lab">Your name</span><input class="in" id="sN" autocomplete="name" placeholder="As it should show on the roster">'+
+    '<span class="lab">Email</span><input class="in" id="sE" type="email" autocomplete="username">'+
+    '<span class="lab">Password (8 or more)</span><input class="in" id="sP" type="password" autocomplete="new-password">'+
+    '<span class="lab">Join code</span><input class="in" id="sC" autocomplete="off" placeholder="Ask Matt">'+
+    (msg?'<div class="err">'+esc(msg)+'</div>':'')+
+    '<div style="margin-top:14px;display:flex;gap:8px"><button class="btn" id="sGo">Create account</button>'+
+    '<button class="btn q" id="sBack">Back to sign in</button></div></div>';
+  $("#sBack").onclick=()=>login();
+  $("#sGo").onclick=async()=>{
+    const name=$("#sN").value.trim(),email=$("#sE").value.trim(),pw=$("#sP").value,code=$("#sC").value.trim();
+    if(!name||!email||pw.length<8||!code) return signup("Fill in every box. The password needs 8 or more characters.");
+    $("#sGo").textContent="Creating…";
+    const {data,error}=await sb.auth.signUp({email:email,password:pw,options:{data:{full_name:name,join_code:code.toUpperCase()}}});
+    if(error) return signup(error.message);
+    if(data.session){ boot(); return; }
+    login("Account created. Check your email for the confirmation link, then sign in.");
+  };
 }
 async function boot(){
   const c=cfg(); if(!c) return setup();
@@ -367,7 +390,7 @@ async function boot(){
   me=session.user;
   const {data:p,error}=await sb.from("profiles").select("*").eq("id",me.id).maybeSingle();
   if(error) return login("Could not read your profile: "+error.message);
-  if(!p) return login("This login has no profile row yet.");
+  if(!p){ await sb.auth.signOut(); return login("That account is not on the crew list. The join code was probably wrong — create the account again with the right code, or ask Matt."); }
   prof=p; await probe(); await loadAll();
   await turnRatesOn();
   watch();
@@ -599,7 +622,7 @@ function render(){
   else if(tab==="prices") v.innerHTML=viewPrices();
   else if(tab==="clients") v.innerHTML=viewClients();
   else if(tab==="jobs"){ v.innerHTML=viewJobs(); if(!portfolio) loadPortfolio(); }
-  else if(tab==="biz") v.innerHTML=viewBiz();
+  else if(tab==="biz") v.innerHTML=xJoinCode()+viewBiz();
   else if(tab==="check") v.innerHTML=viewCheck();
   else v.innerHTML=viewCrew();
 }
@@ -1241,6 +1264,10 @@ function pricePicker(q){
 }
 
 /* ---------------- business details ---------------- */
+function xJoinCode(){ const o=D.org||{}; if(!caps.siteops||!("join_code" in o)) return "";
+  return '<div class="panel"><div class="ph"><div><div class="pt">Crew sign-up</div><div class="ps">Give new crew the app link and this code. They create their own account; it lands on the Crew list as a labourer with no rate until you set one.</div></div></div>'+
+    '<div style="padding:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="lab" style="margin:0">Join code</span><input class="in" style="width:200px;font-weight:700;letter-spacing:.08em" value="'+esc(o.join_code||"")+'" data-act="og" data-f="join_code">'+
+    '<span class="ps">Link: '+esc(location.origin+location.pathname)+'</span></div></div>'; }
 function viewBiz(){
   const o=D.org||{};
   let h='<div class="panel"><div class="ph"><div><div class="pt">Your logo</div>'+
