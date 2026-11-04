@@ -214,6 +214,7 @@ from (values
 where not exists (select 1 from crew c where c.org_id = 'd8d20518-9dc7-4372-92a8-9eb0e2f5f4d8' and lower(c.name) = lower(v.n));
 
 -- tenders being priced → Leads tab (status Quoting)
+alter table leads add column if not exists notes text;
 insert into leads (org_id, title, source, est_value, status, notes)
 select 'd8d20518-9dc7-4372-92a8-9eb0e2f5f4d8', v.t, v.s, 0, 'Quoting', v.nt
 from (values
@@ -229,6 +230,20 @@ from (values
   ('St Bonaventure''s College Flagstone Stage 2',                '',                       'CUSP 25076 – sportsfield turf, planting, drainage')
 ) as v(t, s, nt)
 where not exists (select 1 from leads l where l.org_id = 'd8d20518-9dc7-4372-92a8-9eb0e2f5f4d8' and lower(l.title) = lower(v.t));
+
+-- price list table (the app's optional add-on) – created here if it is not there yet
+create table if not exists price_items (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null references orgs on delete cascade,
+  code text, name text not null, category text, unit text,
+  cost numeric(14,4) default 0, margin_pct numeric(6,2) default 20,
+  supplier text, note text, active boolean default true,
+  used_count int default 0, updated_at timestamptz default now());
+alter table price_items enable row level security;
+drop policy if exists money_only on price_items;
+create policy money_only on price_items for all
+  using (org_id = my_org() and sees_money())
+  with check (org_id = my_org() and sees_money());
 
 -- supplier buy rates → Price list (cost only; margin stays at your default)
 insert into price_items (org_id, name, unit, cost, margin_pct, supplier, category, active)
